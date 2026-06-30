@@ -243,8 +243,7 @@ type PageData struct {
 	Relations      []*models.Relation
 	GeneratorCards []*models.GeneratorCard
 	Clone          *models.DatasetRequest
-	Comment     *models.Update
-	IsPage      bool // true when rendered as a standalone page, not a modal fragment
+	Comment *models.Update
 }
 
 type FilterState struct {
@@ -393,7 +392,7 @@ func (h *Handler) ListRequests(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) NewRequestForm(w http.ResponseWriter, r *http.Request) {
-	h.renderPage(w, r, "request_form_page", PageData{Title: "New Request", IsPage: true})
+	h.renderPage(w, r, "request_form_page", PageData{Title: "New Request"})
 }
 
 func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -521,7 +520,7 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards, IsPage: true,
+		Title: req.Title, Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards,
 	})
 }
 
@@ -540,7 +539,7 @@ func (h *Handler) GetCloneForm(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", 404)
 		return
 	}
-	h.renderPage(w, r, "request_form_page", PageData{Title: "Clone Request", Clone: req, IsPage: true})
+	h.renderPage(w, r, "request_form_page", PageData{Title: "Clone Request", Clone: req})
 }
 
 func (h *Handler) ViewSection(w http.ResponseWriter, r *http.Request) {
@@ -775,20 +774,20 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmxTarget := r.Header.Get("HX-Target")
-	if strings.HasPrefix(htmxTarget, "status-cell-") {
+	if strings.HasPrefix(r.Header.Get("HX-Target"), "status-cell-") {
 		h.renderPartial(w, r, "status_badge", PageData{Request: req})
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
 	managers, _ := h.users.GetManagers()
 	relations, _ := h.relations.GetByRequestID(id)
+	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
-		Request:   req,
-		Updates:   updates,
-		Managers:  managers,
-		Relations: relations,
-		IsPage:    htmxTarget != "modal-container",
+		Request:        req,
+		Updates:        updates,
+		Managers:       managers,
+		Relations:      relations,
+		GeneratorCards: cards,
 	})
 }
 

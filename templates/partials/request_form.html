@@ -11,13 +11,6 @@
         {{if .Request}}Update request details{{else if .Clone}}Based on #{{.Clone.ID}} — a relation will be created automatically{{else}}Request FCC simulation, reconstruction, or detector data{{end}}
       </p>
     </div>
-    {{if not .IsPage}}
-    <button onclick="closeModal()" class="p-2 rounded-xl text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors">
-      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-      </svg>
-    </button>
-    {{end}}
   </div>
 
   <form
@@ -197,6 +190,18 @@
       </div>
     </div>
 
+    {{if not .Request}}
+    <div>
+      <label class="form-label">Generator Card</label>
+      <div class="flex items-center gap-2">
+        <input type="file" name="generator_card"
+               onchange="checkTextFile(this)"
+               class="text-sm text-stone-500 dark:text-stone-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-100 dark:file:bg-stone-700 file:text-stone-600 dark:file:text-stone-300 hover:file:bg-stone-200 dark:hover:file:bg-stone-600 file:transition-colors cursor-pointer flex-1 min-w-0">
+      </div>
+      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB.</p>
+    </div>
+    {{end}}
+
     <!-- Notes -->
     <div>
       <label class="form-label">Additional Notes</label>
@@ -215,15 +220,6 @@
     </div>
 
     {{if not .Request}}
-    <div>
-      <label class="form-label">Generator Card</label>
-      <div class="flex items-center gap-2">
-        <input type="file" name="generator_card"
-               onchange="checkTextFile(this)"
-               class="text-sm text-stone-500 dark:text-stone-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-100 dark:file:bg-stone-700 file:text-stone-600 dark:file:text-stone-300 hover:file:bg-stone-200 dark:hover:file:bg-stone-600 file:transition-colors cursor-pointer flex-1 min-w-0">
-      </div>
-      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB.</p>
-    </div>
     <div>
       <span class="detail-label block mb-2">Related Requests</span>
       <div id="relation-rows" class="space-y-2 mb-2">
@@ -296,19 +292,11 @@
 
     <!-- Actions -->
     <div class="flex items-center justify-end gap-3 pt-2">
-      {{if .IsPage}}
       <a href="#" onclick="history.back(); return false;"
          class="px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium
                 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
         Cancel
       </a>
-      {{else}}
-      <button type="button" onclick="closeModal()"
-              class="px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium
-                     hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-        Cancel
-      </button>
-      {{end}}
       {{if not .Request}}
       <button type="submit" name="status" value="draft" formnovalidate
               class="px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium

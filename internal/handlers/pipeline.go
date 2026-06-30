@@ -243,11 +243,14 @@ func (h *Handler) UpdatePriority(w http.ResponseWriter, r *http.Request) {
 	}
 	updates, _ := h.updates.GetByRequestID(id)
 	managers, _ := h.users.GetManagers()
+	relations, _ := h.relations.GetByRequestID(id)
+	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
-		Request:  req,
-		Updates:  updates,
-		Managers: managers,
-		IsPage:   htmxTarget != "modal-container",
+		Request:        req,
+		Updates:        updates,
+		Managers:       managers,
+		Relations:      relations,
+		GeneratorCards: cards,
 	})
 }
 
