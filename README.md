@@ -66,22 +66,21 @@ Open **http://localhost:5050**, enter a username, choose a role (requester or ma
 ### Build
 
 ```bash
-# Development build (SQLite)
-go build -o fcc-drs ./cmd/fcc-drs
-
-# Production build (PostgreSQL — for CERN PaaS deployment)
-go build -tags prod -o fcc-drs ./cmd/fcc-drs
+make build      # production build (PostgreSQL, version from git tag)
+make build-dev  # development build (SQLite, version = "dev")
 ```
+
+The production build injects the current git tag as the version string shown in the footer via `-ldflags`. Omitting it (or building with `go build` directly) defaults to `dev`.
 
 ### Front-end assets
 
-All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, Inter font) are self-hosted under `static/vendor/`. To download them:
+All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, Inter font) are self-hosted under `static/vendor/`. Run once after cloning:
 
 ```bash
-./scripts/download-assets.sh
+make assets
 ```
 
-Run this once after cloning. No build step is required — Bulma is a pre-built CSS file.
+No build step is required — Bulma is a pre-built CSS file.
 
 The server starts on **http://localhost:5050**. The SQLite database is created automatically at `./data/requests.db` on first run (dev mode only).
 

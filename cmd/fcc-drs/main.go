@@ -14,6 +14,10 @@ import (
 	"dataset-tracker/internal/models"
 )
 
+// version is set at build time via -ldflags "-X main.version=vX.Y.Z".
+// Falls back to "dev" for local builds without the flag.
+var version = "dev"
+
 func main() {
 	devMode := os.Getenv("DEV_MODE") == "TRUE"
 
@@ -44,7 +48,7 @@ func main() {
 	}
 
 	userRepo := models.NewUserStore(database.DB, database.DriverName())
-	h := handlers.New(database.DB, database.DriverName(), oidcClient, devMode)
+	h := handlers.New(database.DB, database.DriverName(), oidcClient, devMode, version)
 
 	authMW := middleware.Auth(userRepo)
 
