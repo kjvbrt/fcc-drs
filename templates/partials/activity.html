@@ -72,7 +72,7 @@
       {{else}}
       <div></div>
       {{end}}
-      <button type="submit" class="button is-link is-small is-shrink-0">Comment</button>
+      <button type="submit" class="button has-text-link is-shrink-0">Comment</button>
     </div>
   </form>
 </div>
@@ -130,8 +130,8 @@
       <button type="button"
               hx-get="/requests/{{$c.RequestID}}/comments/{{$c.ID}}"
               hx-target="#comment-{{$c.ID}}" hx-swap="outerHTML"
-              class="button is-small">Cancel</button>
-      <button type="submit" class="button is-link is-small">Save</button>
+              class="button">Cancel</button>
+      <button type="submit" class="button has-text-link">Save</button>
     </div>
   </form>
 </div>

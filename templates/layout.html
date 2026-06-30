@@ -380,10 +380,10 @@
         return;
       }
       for (var i = 0; i < input.files.length; i++) {
-        var li = document.createElement('li');
-        li.className = 'is-size-7 has-text-grey';
-        li.textContent = input.files[i].name;
-        el.appendChild(li);
+        var tag = document.createElement('span');
+        tag.className = 'tag is-light is-small';
+        tag.textContent = input.files[i].name;
+        el.appendChild(tag);
       }
     }
 

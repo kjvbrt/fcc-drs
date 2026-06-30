@@ -213,6 +213,7 @@ a.navbar-item.is-active {
 [data-theme=dark] .stat-card { background: #1c1917; border-color: #3d3830; }
 
 /* ── Bulma tag is-light dark overrides ──────────────────────────────────── */
+[data-theme=dark] .tag.is-light              { background-color: #2a2724; color: #c0bbb7; }
 [data-theme=dark] .tag.is-success.is-light  { background-color: rgba(5,150,105,.18);  color: #6ee7b7; }
 [data-theme=dark] .tag.is-danger.is-light   { background-color: rgba(220,38,38,.18);  color: #fca5a5; }
 [data-theme=dark] .tag.is-warning.is-light  { background-color: rgba(217,119,6,.18);  color: #fcd34d; }
@@ -341,6 +342,25 @@ a.navbar-item.is-active {
   letter-spacing: 0.01em;
 }
 [data-theme=dark] .tag-drs { background: #292524; color: #a8a29e; }
+
+/* ── File upload ─────────────────────────────────────────────────────────── */
+/* Bulma uses height:2.5em — relative to font-size, so mismatched font-sizes
+   between .file-cta and .file-name produce unequal heights. Fix with rem. */
+.file .file-cta,
+.file .file-name {
+  height: 2.5rem;
+  font-size: 0.875rem;
+}
+.file.is-small .file-cta,
+.file.is-small .file-name {
+  height: 1.875rem;
+  font-size: 0.75rem;
+}
+/* Bulma's block-spacing rule adds margin-bottom to .file:not(:last-child),
+   which shifts vertical alignment inside flex rows. */
+.is-flex > .file {
+  margin-bottom: 0;
+}
 
 /* ── Form elements ───────────────────────────────────────────────────────── */
 .form-label {
@@ -545,8 +565,8 @@ select.form-input { cursor: pointer; }
 
 /* ── Prose display blocks ────────────────────────────────────────────────── */
 .prose-block {
-  background: #f3f0ee;
-  border: 1px solid #ddd9d6;
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
   border-radius: 0.75rem;
   padding: 1rem;
 }
@@ -562,8 +582,8 @@ select.form-input { cursor: pointer; }
 
 /* ── Detail items ────────────────────────────────────────────────────────── */
 .detail-item {
-  background: #f3f0ee;
-  border: 1px solid #ddd9d6;
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
   border-radius: 0.75rem;
   padding: 0.75rem;
 }
@@ -665,8 +685,8 @@ select.form-input { cursor: pointer; }
   gap: 0.75rem;
   padding: 0.65rem 0.75rem;
   border-radius: 0.75rem;
-  background: #f3f0ee;
-  border: 1px solid #ddd9d6;
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
 }
 [data-theme=dark] .panel-row { background: #252220; border-color: #3d3830; }
 
