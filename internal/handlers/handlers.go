@@ -242,6 +242,7 @@ type PageData struct {
 	Managers    []*models.User
 	Relations      []*models.Relation
 	GeneratorCards []*models.GeneratorCard
+	GeneratorCard  *models.GeneratorCard
 	Clone          *models.DatasetRequest
 	Comment *models.Update
 }

@@ -302,6 +302,7 @@ Requester identity (name, username, email) is populated automatically from CERN 
 * implement info button or whole wiki section on how to request a dataset, what
     is the planned production schedule and so on.
 * Maybe add a banner informing about the next campaign?
+* Rename manager role to coordinator
 
 
 ---

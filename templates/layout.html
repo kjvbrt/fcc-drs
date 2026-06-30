@@ -227,7 +227,37 @@
     </div>
   </footer>
 
+  <!-- File viewer modal -->
+  <div id="file-viewer-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFileViewer()"></div>
+    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-h-[80vh] flex flex-col" style="max-width:42rem">
+      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-800 shrink-0">
+        <span id="file-viewer-title" class="text-sm font-medium text-stone-700 dark:text-stone-300 truncate"></span>
+        <button onclick="closeFileViewer()"
+                class="shrink-0 ml-3 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="file-viewer-content" class="overflow-auto p-4 flex-1 min-h-0"></div>
+    </div>
+  </div>
+
   <!-- Confirmation modal -->
+  <div id="alert-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAlert()"></div>
+    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-w-sm p-6">
+      <p id="alert-message" class="text-sm text-stone-700 dark:text-stone-300 mb-6 leading-relaxed"></p>
+      <div class="flex items-center justify-end">
+        <button onclick="closeAlert()"
+                class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="confirm-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeConfirm()"></div>
     <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-w-sm p-6">
@@ -246,7 +276,16 @@
   </div>
 
   <script>
+    function closeFileViewer() {
+      document.getElementById('file-viewer-overlay').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
     document.body.addEventListener('htmx:afterSwap', function(e) {
+      if (e.detail.target.id === 'file-viewer-content') {
+        document.getElementById('file-viewer-overlay').classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
       // For outerHTML swaps the target is detached after the swap; fall back to document.
       // data-rendered prevents double-rendering of already-processed elements.
       var root = document.contains(e.detail.target) ? e.detail.target : document;
@@ -313,6 +352,17 @@ function renderMd(root) {
     document.addEventListener('DOMContentLoaded', function() { updateThemeButtons(getTheme()); });
 
     // ── Confirmation modal ─────────────────────────────────────────────────
+    function showAlert(message) {
+      document.getElementById('alert-message').textContent = message;
+      document.getElementById('alert-overlay').classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeAlert() {
+      document.getElementById('alert-overlay').classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
     function showConfirm(message, onConfirm) {
       document.getElementById('confirm-message').textContent = message;
       var ok = document.getElementById('confirm-ok');
@@ -327,7 +377,7 @@ function renderMd(root) {
     }
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closeConfirm();
+      if (e.key === 'Escape') { closeAlert(); closeConfirm(); closeFileViewer(); }
     });
 
     function confirmStatusApproval(sel) {
@@ -352,23 +402,70 @@ function renderMd(root) {
       showConfirm(message, function() { htmx.trigger(btn, event || 'action-confirmed'); });
     }
 
+    function showSelectedFiles(input, listId) {
+      var el = document.getElementById(listId);
+      if (!el) return;
+      el.innerHTML = '';
+      if (input.files.length > 20) {
+        input.value = '';
+        showAlert('Maximum 20 files per upload.');
+        return;
+      }
+      var names = new Set();
+      var dupe = null;
+      for (var i = 0; i < input.files.length; i++) {
+        if (names.has(input.files[i].name)) { dupe = input.files[i].name; break; }
+        names.add(input.files[i].name);
+      }
+      if (dupe) {
+        input.value = '';
+        showAlert('Duplicate filename selected: "' + dupe + '".');
+        return;
+      }
+      for (var i = 0; i < input.files.length; i++) {
+        var li = document.createElement('li');
+        li.className = 'text-xs text-stone-500 dark:text-stone-400';
+        li.textContent = input.files[i].name;
+        el.appendChild(li);
+      }
+    }
+
+    function checkDuplicateCard(input) {
+      if (!input.files.length) return;
+      var form = input.closest('form');
+      var existing = Array.from(form.querySelectorAll('input[name="existing_card"]')).map(function(el) { return el.value; });
+      var name = input.files[0].name;
+      if (existing.indexOf(name) !== -1) {
+        input.value = '';
+        showAlert('A file named "' + name + '" has already been uploaded.');
+      }
+    }
+
     function checkTextFile(input) {
-      var file = input.files[0];
-      if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(e) {
-        var bytes = new Uint8Array(e.target.result);
-        for (var i = 0; i < bytes.length; i++) {
-          if (bytes[i] === 0) {
-            input.setCustomValidity('Only plain-text files are accepted (binary content detected).');
-            input.reportValidity();
-            input.value = '';
-            return;
-          }
-        }
-        input.setCustomValidity('');
-      };
-      reader.readAsArrayBuffer(file.slice(0, 512));
+      var files = input.files;
+      if (!files || files.length === 0) return;
+      var remaining = files.length;
+      var failed = false;
+      for (var i = 0; i < files.length; i++) {
+        (function(file) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            if (failed) return;
+            var bytes = new Uint8Array(e.target.result);
+            for (var j = 0; j < bytes.length; j++) {
+              if (bytes[j] === 0) {
+                failed = true;
+                input.setCustomValidity('Only plain-text files are accepted (binary content detected in "' + file.name + '").');
+                input.reportValidity();
+                input.value = '';
+                return;
+              }
+            }
+            if (--remaining === 0) input.setCustomValidity('');
+          };
+          reader.readAsArrayBuffer(file.slice(0, 512));
+        })(files[i]);
+      }
     }
 
     // ── Batch selection ────────────────────────────────────────────────────

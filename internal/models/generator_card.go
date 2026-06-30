@@ -17,6 +17,10 @@ type GeneratorCard struct {
 	CreatedAt    time.Time
 }
 
+func (c *GeneratorCard) ContentString() string {
+	return string(c.Content)
+}
+
 type GeneratorCardStore struct {
 	db *sql.DB
 	dbHelper

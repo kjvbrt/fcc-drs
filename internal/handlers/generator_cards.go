@@ -14,30 +14,45 @@ import (
 	"dataset-tracker/internal/models"
 )
 
-const maxGeneratorCardSize = 1 << 20 // 1 MB
+const maxGeneratorCardSize = 1 << 20  // 1 MB
+const maxGeneratorCardsPerUpload = 20
 
-// saveGeneratorCardFromForm reads "generator_card" from a parsed multipart
-// form and persists it. Silently skips if no file was provided.
+// saveGeneratorCardFromForm reads all "generator_card" files from a parsed
+// multipart form and persists them. Silently skips if no files were provided.
 func (h *Handler) saveGeneratorCardFromForm(r *http.Request, requestID, userID int) {
-	file, header, err := r.FormFile("generator_card")
-	if err != nil {
+	if r.MultipartForm == nil {
 		return
 	}
-	defer file.Close()
-
-	content, err := io.ReadAll(io.LimitReader(file, maxGeneratorCardSize+1))
-	if err != nil || int64(len(content)) > maxGeneratorCardSize || bytes.IndexByte(content, 0) >= 0 {
-		return
+	headers := r.MultipartForm.File["generator_card"]
+	if len(headers) > maxGeneratorCardsPerUpload {
+		headers = headers[:maxGeneratorCardsPerUpload]
 	}
-	card := &models.GeneratorCard{
-		RequestID:  requestID,
-		Filename:   filepath.Base(header.Filename),
-		Size:       int64(len(content)),
-		Content:    content,
-		UploadedBy: userID,
-	}
-	if _, err := h.generatorCards.Add(card); err != nil {
-		slog.Error("save generator card from form", "error", err)
+	seen := make(map[string]bool)
+	for _, header := range headers {
+		name := filepath.Base(header.Filename)
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+		file, err := header.Open()
+		if err != nil {
+			continue
+		}
+		content, err := io.ReadAll(io.LimitReader(file, maxGeneratorCardSize+1))
+		file.Close()
+		if err != nil || int64(len(content)) > maxGeneratorCardSize || bytes.IndexByte(content, 0) >= 0 {
+			continue
+		}
+		card := &models.GeneratorCard{
+			RequestID:  requestID,
+			Filename:   name,
+			Size:       int64(len(content)),
+			Content:    content,
+			UploadedBy: userID,
+		}
+		if _, err := h.generatorCards.Add(card); err != nil {
+			slog.Error("save generator card from form", "error", err)
+		}
 	}
 }
 
@@ -58,28 +73,18 @@ func (h *Handler) UploadGeneratorCard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := r.ParseMultipartForm(maxGeneratorCardSize + 512); err != nil {
+	if err := r.ParseMultipartForm(maxGeneratorCardSize*10 + 512); err != nil {
 		http.Error(w, "Bad Request", 400)
 		return
 	}
-	file, header, err := r.FormFile("generator_card")
-	if err != nil {
+
+	headers := r.MultipartForm.File["generator_card"]
+	if len(headers) == 0 {
 		http.Error(w, "no file provided", 400)
 		return
 	}
-	defer file.Close()
-
-	content, err := io.ReadAll(io.LimitReader(file, maxGeneratorCardSize+1))
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
-	if int64(len(content)) > maxGeneratorCardSize {
-		http.Error(w, "file too large (max 1 MB)", 400)
-		return
-	}
-	if bytes.IndexByte(content, 0) >= 0 {
-		http.Error(w, "only plain-text files are accepted", 400)
+	if len(headers) > maxGeneratorCardsPerUpload {
+		http.Error(w, "too many files (max 20 per upload)", 400)
 		return
 	}
 
@@ -87,21 +92,57 @@ func (h *Handler) UploadGeneratorCard(w http.ResponseWriter, r *http.Request) {
 	if user != nil {
 		userID = user.ID
 	}
-	card := &models.GeneratorCard{
-		RequestID:  id,
-		Filename:   filepath.Base(header.Filename),
-		Size:       int64(len(content)),
-		Content:    content,
-		UploadedBy: userID,
+
+	existing, _ := h.generatorCards.GetByRequestID(id)
+	taken := make(map[string]bool, len(existing))
+	for _, c := range existing {
+		taken[c.Filename] = true
 	}
-	if _, err := h.generatorCards.Add(card); err != nil {
-		slog.Error("upload generator card", "error", err)
-		http.Error(w, "Internal Server Error", 500)
-		return
+
+	seen := make(map[string]bool)
+	for _, header := range headers {
+		name := filepath.Base(header.Filename)
+		if taken[name] || seen[name] {
+			continue
+		}
+		seen[name] = true
+		file, err := header.Open()
+		if err != nil {
+			continue
+		}
+		content, err := io.ReadAll(io.LimitReader(file, maxGeneratorCardSize+1))
+		file.Close()
+		if err != nil || int64(len(content)) > maxGeneratorCardSize || bytes.IndexByte(content, 0) >= 0 {
+			continue
+		}
+		card := &models.GeneratorCard{
+			RequestID:  id,
+			Filename:   name,
+			Size:       int64(len(content)),
+			Content:    content,
+			UploadedBy: userID,
+		}
+		if _, err := h.generatorCards.Add(card); err != nil {
+			slog.Error("upload generator card", "error", err)
+		}
 	}
 
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "generator_cards", PageData{Request: req, GeneratorCards: cards})
+}
+
+func (h *Handler) ViewGeneratorCard(w http.ResponseWriter, r *http.Request) {
+	cardID, err := strconv.Atoi(r.PathValue("card_id"))
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	card, err := h.generatorCards.GetByID(cardID)
+	if err != nil {
+		http.Error(w, "Not Found", 404)
+		return
+	}
+	h.renderPartial(w, r, "generator_card_viewer", PageData{GeneratorCard: card})
 }
 
 func (h *Handler) DownloadGeneratorCard(w http.ResponseWriter, r *http.Request) {

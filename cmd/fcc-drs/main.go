@@ -90,6 +90,7 @@ func main() {
 	mux.HandleFunc("POST /requests/{id}/relations", middleware.RequireAuth(h.AddRelation))
 	mux.HandleFunc("DELETE /requests/{id}/relations/{rel_id}", middleware.RequireAuth(h.RemoveRelation))
 	mux.HandleFunc("POST /requests/{id}/generator-cards", middleware.RequireAuth(h.UploadGeneratorCard))
+	mux.HandleFunc("GET /requests/{id}/generator-cards/{card_id}/view", middleware.RequireAuth(h.ViewGeneratorCard))
 	mux.HandleFunc("GET /requests/{id}/generator-cards/{card_id}/download", middleware.RequireAuth(h.DownloadGeneratorCard))
 	mux.HandleFunc("DELETE /requests/{id}/generator-cards/{card_id}", middleware.RequireAuth(h.DeleteGeneratorCard))
 	mux.HandleFunc("DELETE /requests/{id}", middleware.RequireAuth(h.DeleteRequest))

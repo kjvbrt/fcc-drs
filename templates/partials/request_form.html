@@ -192,13 +192,14 @@
 
     {{if not .Request}}
     <div>
-      <label class="form-label">Generator Card</label>
+      <label class="form-label">Generator Cards</label>
       <div class="flex items-center gap-2">
-        <input type="file" name="generator_card"
-               onchange="checkTextFile(this)"
+        <input type="file" name="generator_card" multiple
+               onchange="checkTextFile(this); showSelectedFiles(this, 'gc-file-list')"
                class="text-sm text-stone-500 dark:text-stone-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-100 dark:file:bg-stone-700 file:text-stone-600 dark:file:text-stone-300 hover:file:bg-stone-200 dark:hover:file:bg-stone-600 file:transition-colors cursor-pointer flex-1 min-w-0">
       </div>
-      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB.</p>
+      <ul id="gc-file-list" class="mt-1.5 space-y-0.5"></ul>
+      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB each.</p>
     </div>
     {{end}}
 
