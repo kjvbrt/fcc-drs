@@ -25,10 +25,11 @@ type Handler struct {
 	oidc           *auth.Client
 	funcMap        template.FuncMap
 	devMode        bool
+	version        string
 	emailCfg       email.Config
 }
 
-func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool) *Handler {
+func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, version string) *Handler {
 	h := &Handler{
 		requests:       models.NewRequestStore(db, driver),
 		users:          models.NewUserStore(db, driver),
@@ -37,6 +38,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool) *Hand
 		generatorCards: models.NewGeneratorCardStore(db, driver),
 		oidc:           oidcClient,
 		devMode:        devMode,
+		version:        version,
 		emailCfg:       email.ConfigFromEnv(),
 	}
 	h.funcMap = template.FuncMap{
@@ -87,9 +89,10 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool) *Hand
 }
 
 // renderPage parses layout + a specific page template together.
-// CurrentUser is automatically populated from the request context.
+// CurrentUser and Version are automatically populated from the request context.
 func (h *Handler) renderPage(w http.ResponseWriter, r *http.Request, page string, data PageData) {
 	data.CurrentUser = middleware.GetUser(r)
+	data.Version = h.version
 	tmpl, err := template.New("").Funcs(h.funcMap).ParseFiles(
 		"templates/layout.html",
 		"templates/"+page+".html",
@@ -110,6 +113,7 @@ func (h *Handler) renderPage(w http.ResponseWriter, r *http.Request, page string
 // renderPartial renders a named partial template for HTMX responses.
 func (h *Handler) renderPartial(w http.ResponseWriter, r *http.Request, name string, data PageData) {
 	data.CurrentUser = middleware.GetUser(r)
+	data.Version = h.version
 	tmpl, err := template.New("").Funcs(h.funcMap).ParseGlob("templates/partials/*.html")
 	if err != nil {
 		slog.Error("parse partials", "error", err)
@@ -238,6 +242,7 @@ type PageData struct {
 	CurrentUser *models.User
 	Error       string
 	DevMode     bool
+	Version     string
 	Updates     []*models.Update
 	Managers    []*models.User
 	Relations      []*models.Relation
