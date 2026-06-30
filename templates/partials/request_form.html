@@ -1,16 +1,13 @@
 {{define "request_form"}}
 {{$src := or .Request .Clone}}
-<div class="p-6">
-  <!-- Modal header -->
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h2 class="text-xl font-semibold text-stone-900 dark:text-stone-100">
-        {{if .Request}}Edit Request{{else}}New Dataset Request{{end}}
-      </h2>
-      <p class="text-sm text-stone-500 mt-0.5">
-        {{if .Request}}Update request details{{else if .Clone}}Based on #{{.Clone.ID}} — a relation will be created automatically{{else}}Request FCC simulation, reconstruction, or detector data{{end}}
-      </p>
-    </div>
+<div class="p-5">
+  <div class="mb-5">
+    <h2 class="is-size-5 has-text-weight-semibold">
+      {{if .Request}}Edit Request{{else}}New Dataset Request{{end}}
+    </h2>
+    <p class="is-size-7 has-text-grey mt-1">
+      {{if .Request}}Update request details{{else if .Clone}}Based on #{{.Clone.ID}} — a relation will be created automatically{{else}}Request FCC simulation, reconstruction, or detector data{{end}}
+    </p>
   </div>
 
   <form
@@ -20,46 +17,47 @@
       hx-post="/requests"
       hx-encoding="multipart/form-data"
     {{end}}
-    hx-swap="none"
-    class="space-y-5">
+    hx-swap="none">
 
     <!-- Title -->
-    <div>
-      <label class="form-label">Title <span class="text-red-500">*</span></label>
+    <div class="mb-4">
+      <label class="form-label">Title <span class="has-text-danger">*</span></label>
       <input type="text" name="title" required autocomplete="off"
              value="{{if $src}}{{$src.Title}}{{end}}"
              placeholder="e.g. Dijet events at √s=100 TeV for calorimeter studies"
-             class="form-input"/>
+             class="form-input">
     </div>
 
     <!-- Description -->
-    <div>
+    <div class="mb-4">
       <label class="form-label">Description</label>
       <textarea name="description" rows="3"
                 placeholder="Physics process, energy range, detector concept, selection criteria…"
-                class="form-input resize-none">{{if $src}}{{$src.Description}}{{end}}</textarea>
+                class="form-input" style="resize:none">{{if $src}}{{$src.Description}}{{end}}</textarea>
     </div>
 
-    <!-- Requester identity (from SSO, display only) -->
-    <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700">
-      <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center shrink-0">
-        <span class="text-indigo-600 text-xs font-bold">{{if .Request}}{{initial .Request.RequesterName}}{{else if .CurrentUser}}{{initial .CurrentUser.DisplayName}}{{else}}?{{end}}</span>
+    <!-- Requester identity -->
+    <div class="panel-row mb-4">
+      <div class="is-flex is-align-items-center gap-3">
+        <div class="drs-avatar" style="width:2rem;height:2rem">
+          <span style="font-size:.7rem">{{if .Request}}{{initial .Request.RequesterName}}{{else if .CurrentUser}}{{initial .CurrentUser.DisplayName}}{{else}}?{{end}}</span>
+        </div>
+        <div class="min-w-0">
+          <p class="is-size-7 has-text-weight-medium is-truncated">
+            {{if .Request}}{{.Request.RequesterName}}{{else if .CurrentUser}}{{.CurrentUser.DisplayName}}{{end}}
+            <span class="has-text-grey"> · </span>
+            <span class="has-text-grey">{{if .Request}}{{.Request.RequesterUsername}}{{else if .CurrentUser}}{{.CurrentUser.Username}}{{end}}</span>
+          </p>
+          <p class="is-size-7 has-text-grey-light is-truncated">{{if .Request}}{{.Request.RequesterEmail}}{{else if .CurrentUser}}{{.CurrentUser.Email}}{{end}}</p>
+        </div>
       </div>
-      <div class="min-w-0">
-        <p class="text-sm font-medium text-stone-800 dark:text-stone-200 truncate">
-          {{if .Request}}{{.Request.RequesterName}}{{else if .CurrentUser}}{{.CurrentUser.DisplayName}}{{end}}
-          <span class="text-stone-400 font-normal">·</span>
-          <span class="text-stone-500 font-normal">{{if .Request}}{{.Request.RequesterUsername}}{{else if .CurrentUser}}{{.CurrentUser.Username}}{{end}}</span>
-        </p>
-        <p class="text-xs text-stone-400 truncate">{{if .Request}}{{.Request.RequesterEmail}}{{else if .CurrentUser}}{{.CurrentUser.Email}}{{end}}</p>
-      </div>
-      <span class="ml-auto shrink-0 text-[10px] font-medium text-stone-400 uppercase tracking-wide">CERN SSO</span>
+      <span class="is-size-7 has-text-grey-light has-text-weight-medium is-uppercase is-shrink-0" style="letter-spacing:.05em;font-size:.65rem">CERN SSO</span>
     </div>
 
-    <!-- Physics/SW Group + Use Case -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="form-label">Group / Team <span class="text-red-500">*</span></label>
+    <!-- Group + Use Case -->
+    <div class="columns is-variable is-3 mb-0">
+      <div class="column">
+        <label class="form-label">Group / Team <span class="has-text-danger">*</span></label>
         {{$dept := ""}}{{if $src}}{{$dept = $src.Department}}{{end}}
         <select name="department" required class="form-input">
           <option value="" {{if eq $dept ""}}selected{{end}} disabled>— Select group or team —</option>
@@ -93,8 +91,8 @@
           </optgroup>
         </select>
       </div>
-      <div>
-        <label class="form-label">Use Case <span class="text-red-500">*</span></label>
+      <div class="column">
+        <label class="form-label">Use Case <span class="has-text-danger">*</span></label>
         <select name="use_case" required class="form-input">
           {{$uc := ""}}{{if $src}}{{$uc = $src.UseCase}}{{end}}
           <option value="" {{if eq $uc ""}}selected{{end}} disabled>— Select use case —</option>
@@ -105,10 +103,10 @@
       </div>
     </div>
 
-    <!-- Final Processing Stage + Format -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="form-label">Final Processing Stage <span class="text-red-500">*</span></label>
+    <!-- Processing Stage + Format -->
+    <div class="columns is-variable is-3 mb-0">
+      <div class="column">
+        <label class="form-label">Final Processing Stage <span class="has-text-danger">*</span></label>
         <select name="dataset_type" required class="form-input">
           {{$dt := ""}}{{if $src}}{{$dt = $src.DatasetType}}{{end}}
           <option value="" {{if eq $dt ""}}selected{{end}} disabled>— Select stage —</option>
@@ -117,68 +115,68 @@
           {{end}}
         </select>
       </div>
-      <div>
-        <label class="form-label">Format <span class="text-red-500">*</span></label>
+      <div class="column">
+        <label class="form-label">Format <span class="has-text-danger">*</span></label>
         {{$fmt := ""}}{{if $src}}{{$fmt = $src.Format}}{{end}}
         <select name="format" required class="form-input">
           <option value="" {{if eq $fmt ""}}selected{{end}} disabled>— Select format —</option>
-          <option value="EDM4hep" {{if eq $fmt "EDM4hep"}}selected{{end}}>EDM4hep</option>
-          <option value="HepMC3"  {{if eq $fmt "HepMC3"}}selected{{end}}>HepMC3</option>
-          <option value="LHEF"    {{if eq $fmt "LHEF"}}selected{{end}}>LHEF</option>
+          <option value="EDM4hep"     {{if eq $fmt "EDM4hep"}}selected{{end}}>EDM4hep</option>
+          <option value="HepMC3"      {{if eq $fmt "HepMC3"}}selected{{end}}>HepMC3</option>
+          <option value="LHEF"        {{if eq $fmt "LHEF"}}selected{{end}}>LHEF</option>
           <option value="ROOT"        {{if eq $fmt "ROOT"}}selected{{end}}>ROOT</option>
           <option value="ROOT NTuple" {{if eq $fmt "ROOT NTuple"}}selected{{end}}>ROOT NTuple</option>
           <option value="ROOT RNTuple" {{if eq $fmt "ROOT RNTuple"}}selected{{end}}>ROOT RNTuple</option>
-          <option value="STDHEP"  {{if eq $fmt "STDHEP"}}selected{{end}}>STDHEP</option>
-          <option value="Other"   {{if eq $fmt "Other"}}selected{{end}}>Other</option>
+          <option value="STDHEP"      {{if eq $fmt "STDHEP"}}selected{{end}}>STDHEP</option>
+          <option value="Other"       {{if eq $fmt "Other"}}selected{{end}}>Other</option>
         </select>
       </div>
     </div>
 
     <!-- Statistics + Est. size -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label class="form-label">Statistics <span class="text-red-500">*</span></label>
+    <div class="columns is-variable is-3 mb-0">
+      <div class="column">
+        <label class="form-label">Statistics <span class="has-text-danger">*</span></label>
         <input type="text" name="statistics" required
                value="{{if $src}}{{$src.Statistics}}{{end}}"
                placeholder="e.g. 10M events"
-               class="form-input"/>
+               class="form-input">
       </div>
-      <div>
-        <label class="form-label">Estimated Size <span class="text-red-500">*</span></label>
+      <div class="column">
+        <label class="form-label">Estimated Size <span class="has-text-danger">*</span></label>
         <input type="text" name="estimated_size" required
                value="{{if $src}}{{$src.EstimatedSize}}{{end}}"
                placeholder="e.g. 500 GB"
-               class="form-input"/>
+               class="form-input">
       </div>
     </div>
 
     <!-- Target Campaign + Key4hep Stack -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
+    <div class="columns is-variable is-3 mb-0">
+      <div class="column">
         <label class="form-label">Target Campaign</label>
         <input type="text" name="target_campaign"
                value="{{if $src}}{{$src.TargetCampaign}}{{end}}"
                placeholder="e.g. Spring2026"
-               class="form-input"/>
+               class="form-input">
       </div>
-      <div>
+      <div class="column">
         <label class="form-label">Key4hep Stack</label>
         <input type="text" name="key4hep_stack"
                value="{{if $src}}{{$src.Key4hepStack}}{{end}}"
                placeholder="e.g. key4hep-2024-03-10"
-               class="form-input"/>
+               class="form-input">
       </div>
     </div>
 
     <!-- Due Date + Priority -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
+    <div class="columns is-variable is-3 mb-0">
+      <div class="column">
         <label class="form-label">Due Date</label>
         <input type="date" name="due_date"
                value="{{if .Request}}{{.Request.DueDate}}{{end}}"
-               class="form-input"/>
+               class="form-input">
       </div>
-      <div>
+      <div class="column">
         <label class="form-label">Priority</label>
         <select name="priority" class="form-input">
           {{$pri := "medium"}}{{if $src}}{{$pri = $src.Priority}}{{end}}
@@ -191,53 +189,69 @@
     </div>
 
     {{if not .Request}}
-    <div>
+    <!-- Generator cards (new request only) -->
+    <div class="mb-4">
       <label class="form-label">Generator Cards</label>
-      <div class="flex items-center gap-2">
-        <input type="file" name="generator_card" multiple
-               onchange="checkTextFile(this); showSelectedFiles(this, 'gc-file-list')"
-               class="text-sm text-stone-500 dark:text-stone-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-100 dark:file:bg-stone-700 file:text-stone-600 dark:file:text-stone-300 hover:file:bg-stone-200 dark:hover:file:bg-stone-600 file:transition-colors cursor-pointer flex-1 min-w-0">
+      <div class="file has-name is-fullwidth">
+        <label class="file-label">
+          <input class="file-input" type="file" name="generator_card" multiple
+                 id="gc-form-input"
+                 onchange="checkTextFile(this); showSelectedFiles(this, 'gc-file-list')">
+          <span class="file-cta" style="border-radius:.5rem 0 0 .5rem">
+            <span class="file-label">Choose files…</span>
+          </span>
+          <span class="file-name" style="border-radius:0 .5rem .5rem 0">No files chosen</span>
+        </label>
       </div>
-      <ul id="gc-file-list" class="mt-1.5 space-y-0.5"></ul>
-      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB each.</p>
+      <div id="gc-file-list" class="tags mt-2" style="gap:.35rem;flex-wrap:wrap"></div>
+      <p class="is-size-7 has-text-grey-light mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB each.</p>
     </div>
+    <script>
+    (function() {
+      var inp = document.getElementById('gc-form-input');
+      if (inp) inp.addEventListener('change', function() {
+        var fn = document.querySelector('.file-name');
+        if (fn) fn.textContent = this.files.length ? this.files.length + ' file(s) selected' : 'No files chosen';
+      });
+    })();
+    </script>
     {{end}}
 
     <!-- Notes -->
-    <div>
+    <div class="mb-4">
       <label class="form-label">Additional Notes</label>
       <textarea name="notes" rows="2"
                 placeholder="Generator settings, beam energy, pile-up conditions, special requirements…"
-                class="form-input resize-none">{{if $src}}{{$src.Notes}}{{end}}</textarea>
+                class="form-input" style="resize:none">{{if $src}}{{$src.Notes}}{{end}}</textarea>
     </div>
 
     <!-- Tags -->
-    <div>
+    <div class="mb-4">
       <label class="form-label">Tags</label>
       <input type="text" name="tags"
              value="{{if $src}}{{$src.Tags}}{{end}}"
              placeholder="e.g. fcc-hh, fcc-ee, higgs, top, ewk, bsm, flavour, llp"
-             class="form-input"/>
+             class="form-input">
     </div>
 
     {{if not .Request}}
-    <div>
-      <span class="detail-label block mb-2">Related Requests</span>
-      <div id="relation-rows" class="space-y-2 mb-2">
-      </div>
-      <div class="flex items-center gap-2">
-        <select id="add-rel-type" class="form-input" style="flex:0 0 auto;width:auto;">
+    <!-- Relations -->
+    <div class="mb-4">
+      <span class="form-label block mb-2">Related Requests</span>
+      <div id="relation-rows" class="mb-2"></div>
+      <div class="is-flex is-align-items-center gap-2">
+        <select id="add-rel-type" class="form-input is-shrink-0" style="width:auto">
           {{range relationTypeLabels}}
           <option value="{{.Value}}" {{if and $.Clone (eq .Value "variant")}}selected{{end}}>{{.Label}}</option>
           {{end}}
         </select>
-        <input type="text" id="add-rel-id" placeholder="#request ID" {{if .Clone}}value="#{{.Clone.ID}}"{{end}} class="form-input min-w-0"/>
+        <input type="text" id="add-rel-id" placeholder="#request ID" {{if .Clone}}value="#{{.Clone.ID}}"{{end}} class="form-input min-w-0">
         <button type="button" id="add-relation-btn"
-                class="shrink-0 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
+                class="button is-link is-outlined is-small is-shrink-0" style="border-radius:.5rem">
           Link
         </button>
       </div>
-      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1.5">#N references in description and notes are captured as mentions automatically.</p>
+      <p class="is-size-7 has-text-grey-light mt-2">#N references in description and notes are captured as mentions automatically.</p>
     </div>
     <script>
     (function() {
@@ -245,34 +259,30 @@
         {{range relationTypeLabels}}'{{.Value}}': '{{.Label}}',
         {{end}}
       };
-      var REMOVE_SVG = '<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
       function makeRow(typeVal, idVal) {
         var row = document.createElement('div');
-        row.className = 'flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-700';
+        row.className = 'panel-row mb-2';
         var left = document.createElement('div');
-        left.className = 'flex items-center gap-2 min-w-0';
+        left.className = 'is-flex is-align-items-center gap-2 min-w-0';
         var typeSpan = document.createElement('span');
-        typeSpan.className = 'text-[11px] font-medium text-stone-400 dark:text-stone-500 shrink-0';
+        typeSpan.className = 'is-size-7 has-text-grey is-shrink-0';
         typeSpan.textContent = typeLabels[typeVal] || typeVal;
         var idSpan = document.createElement('span');
-        idSpan.className = 'text-sm font-medium text-stone-800 dark:text-stone-200';
+        idSpan.className = 'is-size-7 has-text-weight-medium';
         idSpan.textContent = '#' + idVal;
         var typeInput = document.createElement('input');
         typeInput.type = 'hidden'; typeInput.name = 'rel_type'; typeInput.value = typeVal;
         var idInput = document.createElement('input');
         idInput.type = 'hidden'; idInput.name = 'rel_to'; idInput.value = idVal;
-        left.appendChild(typeSpan);
-        left.appendChild(idSpan);
-        left.appendChild(typeInput);
-        left.appendChild(idInput);
+        left.appendChild(typeSpan); left.appendChild(idSpan);
+        left.appendChild(typeInput); left.appendChild(idInput);
         var btn = document.createElement('button');
         btn.type = 'button';
-        btn.className = 'shrink-0 p-1 rounded-lg text-stone-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors';
+        btn.className = 'btn-icon btn-icon-danger is-shrink-0';
         btn.title = 'Remove';
-        btn.innerHTML = REMOVE_SVG;
+        btn.innerHTML = '<svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>';
         btn.onclick = function() { row.remove(); };
-        row.appendChild(left);
-        row.appendChild(btn);
+        row.appendChild(left); row.appendChild(btn);
         return row;
       }
       var addBtn = document.getElementById('add-relation-btn');
@@ -283,8 +293,7 @@
           var idVal = idEl.value.trim().replace(/^#/, '');
           if (!idVal) return;
           document.getElementById('relation-rows').appendChild(makeRow(typeEl.value, idVal));
-          idEl.value = '';
-          idEl.focus();
+          idEl.value = ''; idEl.focus();
         });
       }
     })();
@@ -292,27 +301,20 @@
     {{end}}
 
     <!-- Actions -->
-    <div class="flex items-center justify-end gap-3 pt-2">
-      <a href="#" onclick="history.back(); return false;"
-         class="px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium
-                hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+    <div class="is-flex is-align-items-center is-justify-content-flex-end gap-3 pt-4">
+      <a href="#" onclick="history.back(); return false;" class="button is-small" style="border-radius:.5rem">
         Cancel
       </a>
       {{if not .Request}}
       <button type="submit" name="status" value="draft" formnovalidate
-              class="px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium
-                     hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
+              class="button is-small" style="border-radius:.5rem">
         Save as Draft
       </button>
-      <button type="submit" name="status" value="pending"
-              class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium
-                     hover:bg-indigo-700 active:scale-95 transition-all shadow-sm">
+      <button type="submit" name="status" value="pending" class="button is-link is-small" style="border-radius:.5rem">
         Submit Request
       </button>
       {{else}}
-      <button type="submit"
-              class="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium
-                     hover:bg-indigo-700 active:scale-95 transition-all shadow-sm">
+      <button type="submit" class="button is-link is-small" style="border-radius:.5rem">
         Save Changes
       </button>
       {{end}}

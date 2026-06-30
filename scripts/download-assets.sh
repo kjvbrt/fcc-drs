@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Download all vendored front-end assets and regenerate the Tailwind CSS.
-# Run this once after cloning, and again whenever templates change (for Tailwind).
+# Download all vendored front-end assets.
+# Run this once after cloning.
 #
 # Requirements: curl, tar (standard on Linux/macOS)
 set -euo pipefail
@@ -8,13 +8,12 @@ set -euo pipefail
 KATEX_VERSION="0.16.11"
 HTMX_VERSION="2.0.4"
 MARKED_VERSION="14"
-TAILWIND_VERSION="3.4.17"
+BULMA_VERSION="1.0.4"
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VENDOR="$ROOT/static/vendor"
-TOOLS="$ROOT/.tools"
 
-mkdir -p "$VENDOR/katex/fonts" "$VENDOR/fonts" "$TOOLS"
+mkdir -p "$VENDOR/katex/fonts" "$VENDOR/fonts"
 
 echo "→ Downloading HTMX $HTMX_VERSION..."
 curl -sL -o "$VENDOR/htmx.min.js" \
@@ -23,6 +22,10 @@ curl -sL -o "$VENDOR/htmx.min.js" \
 echo "→ Downloading marked $MARKED_VERSION..."
 curl -sL -o "$VENDOR/marked.min.js" \
   "https://cdn.jsdelivr.net/npm/marked@${MARKED_VERSION}/marked.min.js"
+
+echo "→ Downloading Bulma $BULMA_VERSION..."
+curl -sL -o "$VENDOR/bulma.min.css" \
+  "https://cdn.jsdelivr.net/npm/bulma@${BULMA_VERSION}/css/bulma.min.css"
 
 echo "→ Downloading KaTeX $KATEX_VERSION..."
 TMP=$(mktemp -d)
@@ -50,21 +53,5 @@ for name in "${!INTER_FILES[@]}"; do
     "https://fonts.gstatic.com/s/inter/v20/${hash}.woff2" &
 done
 wait
-
-echo "→ Downloading Tailwind CLI v$TAILWIND_VERSION..."
-OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
-ARCH="$(uname -m)"
-case "$ARCH" in
-  x86_64) ARCH="x64" ;;
-  aarch64|arm64) ARCH="arm64" ;;
-  *) echo "Unsupported architecture: $ARCH"; exit 1 ;;
-esac
-curl -sL -o "$TOOLS/tailwindcss" \
-  "https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}/tailwindcss-${OS}-${ARCH}"
-chmod +x "$TOOLS/tailwindcss"
-
-echo "→ Generating Tailwind CSS..."
-cd "$ROOT"
-"$TOOLS/tailwindcss" -c tailwind.config.js -i static/input.css -o static/vendor/tailwind.css --minify
 
 echo "✓ All assets ready."

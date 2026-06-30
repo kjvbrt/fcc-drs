@@ -10,11 +10,11 @@
     (function() {
       var t = localStorage.getItem('theme') || 'system';
       var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      if (dark) document.documentElement.classList.add('dark');
+      if (dark) document.documentElement.setAttribute('data-theme', 'dark');
     })();
   </script>
   <script src="/static/vendor/htmx.min.js"></script>
-  <link rel="stylesheet" href="/static/vendor/tailwind.css">
+  <link rel="stylesheet" href="/static/vendor/bulma.min.css">
   <link rel="stylesheet" href="/static/vendor/fonts/inter.css">
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" type="image/png" href="/static/favicon.png">
@@ -25,272 +25,228 @@
   <!-- marked -->
   <script src="/static/vendor/marked.min.js"></script>
 </head>
-<body class="bg-stone-100 dark:bg-stone-950 min-h-screen font-sans antialiased flex flex-col" hx-boost="false">
+<body hx-boost="false">
 
   <!-- Navigation -->
-  <header class="bg-white dark:bg-stone-900 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-40 shadow-sm">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3 md:grid md:grid-cols-[1fr_auto_1fr]">
+  <nav class="navbar is-white has-shadow" role="navigation" aria-label="main navigation">
+    <div class="container">
 
-      <!-- Logo + New Request (desktop) -->
-      <div class="flex items-center gap-3">
-        <a href="/" class="flex items-center gap-3 shrink-0">
-          <img src="/static/logo.png" alt="FCC-DRS" class="h-8 w-auto rounded-xl shadow-sm object-contain"/>
-          <div class="hidden sm:flex flex-col justify-center">
-            <span class="font-semibold text-stone-900 dark:text-stone-100 tracking-tight text-lg leading-tight">Dataset Request System</span>
-            <span class="text-xs font-medium text-indigo-500 tracking-wide leading-tight">Future Circular Collider</span>
+      <div class="navbar-brand">
+        <a href="/" class="navbar-item">
+          <img src="/static/logo.png" alt="FCC-DRS" class="drs-logo">
+          <div class="ml-3 is-hidden-touch">
+            <div class="has-text-weight-semibold is-size-6" style="line-height:1.2">Dataset Request System</div>
+            <div class="drs-nav-subtitle">Future Circular Collider</div>
           </div>
         </a>
+
+        {{if .CurrentUser}}
+        <a role="button" class="navbar-burger" id="navBurger" aria-label="menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </a>
+        {{end}}
       </div>
 
-      <!-- Desktop nav -->
-      <nav class="hidden md:flex items-center gap-1">
-        <a href="/"
-           class="px-4 py-2 rounded-xl text-sm font-medium transition-colors
-                  {{if eq .Title "Dashboard"}}bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300{{else}}text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100{{end}}">
-          Dashboard
-        </a>
-        <a href="/requests"
-           class="px-4 py-2 rounded-xl text-sm font-medium transition-colors
-                  {{if eq .Title "All Requests"}}bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300{{else}}text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100{{end}}">
-          Requests
-        </a>
-      </nav>
+      {{if .CurrentUser}}
+      <!-- Desktop: truly centered nav links -->
+      <div class="drs-nav-center is-hidden-touch">
+        <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
+        <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
+      </div>
+      {{end}}
 
-      <!-- Right side controls -->
-      <div class="flex items-center gap-2 justify-end">
+      <div class="navbar-menu" id="navMenu">
+
         {{if .CurrentUser}}
-        <!-- Desktop: user pill (hidden on mobile) -->
-        <div class="hidden md:flex items-center gap-2">
-          <!-- Theme toggle -->
-          <div class="flex items-center gap-0.5 p-0.5 rounded-xl bg-stone-100 dark:bg-stone-800">
-            <button class="theme-btn" data-theme="light" onclick="setTheme('light')" title="Light mode">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-              </svg>
-            </button>
-            <button class="theme-btn" data-theme="system" onclick="setTheme('system')" title="System preference">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-              </svg>
-            </button>
-            <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="w-px h-6 bg-stone-200 dark:bg-stone-700 mx-1"></div>
-          <div class="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shrink-0">
-            <span class="text-indigo-700 dark:text-indigo-300 font-semibold text-xs">{{initial .CurrentUser.DisplayName}}</span>
-          </div>
-          <div class="leading-tight">
-            <p class="text-xs font-medium text-stone-800 dark:text-stone-200">{{.CurrentUser.Username}}</p>
-            <p class="text-[10px] text-stone-400 capitalize">{{.CurrentUser.Role}}</p>
-          </div>
-          <a href="/logout"
-             class="p-2 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-             title="Logout">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                    d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
-            </svg>
-          </a>
+        <!-- Mobile only: nav links inside burger menu -->
+        <div class="navbar-start is-hidden-desktop">
+          <a href="/" class="navbar-item{{if eq .Title "Dashboard"}} is-active{{end}}">Dashboard</a>
+          <a href="/requests" class="navbar-item{{if eq .Title "All Requests"}} is-active{{end}}">Requests</a>
         </div>
 
-        <!-- Hamburger (mobile only) -->
-        <button id="mobile-menu-btn"
-                class="md:hidden p-2 rounded-xl text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                onclick="document.getElementById('mobile-nav').classList.toggle('hidden')"
-                aria-label="Menu">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
+        <div class="navbar-end">
+          <!-- Theme toggle -->
+          <div class="navbar-item">
+            <div class="theme-toggle">
+              <button class="theme-btn" data-theme="light" onclick="setTheme('light')" title="Light mode">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+              </button>
+              <button class="theme-btn" data-theme="system" onclick="setTheme('system')" title="System preference">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </button>
+              <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <!-- Separator (desktop only) -->
+          <div class="navbar-item is-hidden-touch" style="padding:0">
+            <div class="navbar-separator"></div>
+          </div>
+          <!-- User info -->
+          <div class="navbar-item">
+            <div class="drs-user-avatar">
+              <span>{{initial .CurrentUser.DisplayName}}</span>
+            </div>
+          </div>
+          <div class="navbar-item is-hidden-touch">
+            <div style="line-height:1.3">
+              <p class="is-size-7 has-text-weight-medium">{{.CurrentUser.Username}}</p>
+              <p class="is-size-7 has-text-grey is-capitalized">{{.CurrentUser.Role}}</p>
+            </div>
+          </div>
+          <!-- Logout -->
+          <div class="navbar-item">
+            <a href="/logout" class="button is-ghost is-small" title="Logout">
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
+              </svg>
+              <span class="is-hidden-desktop ml-2">Logout</span>
+            </a>
+          </div>
+        </div>
 
         {{else}}
-        <!-- Desktop: theme toggle + login (hidden on mobile for login page) -->
-        <div class="hidden md:flex items-center gap-0.5 p-0.5 rounded-lg bg-stone-100 dark:bg-stone-800">
-          <button class="theme-btn" data-theme="light" onclick="setTheme('light')" title="Light mode">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-            </svg>
-          </button>
-          <button class="theme-btn" data-theme="system" onclick="setTheme('system')" title="System preference">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-          </button>
-          <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
-          </button>
+        <div class="navbar-end">
+          <!-- Theme toggle (unauthenticated) -->
+          <div class="navbar-item">
+            <div class="theme-toggle">
+              <button class="theme-btn" data-theme="light" onclick="setTheme('light')" title="Light mode">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+              </button>
+              <button class="theme-btn" data-theme="system" onclick="setTheme('system')" title="System preference">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+              </button>
+              <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          {{if ne .Title "Login"}}
+          <div class="navbar-item">
+            <a href="/login" class="button is-link is-small">Login</a>
+          </div>
+          {{end}}
         </div>
-        {{if ne .Title "Login"}}
-        <a href="/login"
-           class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium
-                  hover:bg-indigo-700 transition-colors">
-          Login
-        </a>
         {{end}}
-        {{end}}
-      </div>
-    </div>
 
-    <!-- Mobile nav panel (authenticated) -->
-    {{if .CurrentUser}}
-    <div id="mobile-nav" class="hidden md:hidden border-t border-stone-100 dark:border-stone-800 bg-white dark:bg-stone-900 px-4 py-3 space-y-1">
-      <!-- Nav links -->
-      <a href="/"
-         class="block px-4 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {{if eq .Title "Dashboard"}}bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300{{else}}text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800{{end}}">
-        Dashboard
-      </a>
-      <a href="/requests"
-         class="block px-4 py-2.5 rounded-xl text-sm font-medium transition-colors
-                {{if eq .Title "All Requests"}}bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300{{else}}text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800{{end}}">
-        Requests
-      </a>
-      <!-- Theme toggle row -->
-      <div class="pt-2 mt-2 border-t border-stone-100 dark:border-stone-800 flex items-center gap-2 px-1">
-        <span class="text-xs text-stone-400 shrink-0">Theme</span>
-        <div class="flex items-center gap-0.5 p-0.5 rounded-xl bg-stone-100 dark:bg-stone-800 flex-1">
-          <button class="theme-btn theme-btn-fill" data-theme="light" onclick="setTheme('light')" title="Light mode">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
-            </svg>
-          </button>
-          <button class="theme-btn theme-btn-fill" data-theme="system" onclick="setTheme('system')" title="System preference">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-            </svg>
-          </button>
-          <button class="theme-btn theme-btn-fill" data-theme="dark" onclick="setTheme('dark')" title="Dark mode">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <!-- Separator -->
-      <div class="border-t border-stone-100 dark:border-stone-800 mt-2"></div>
-      <!-- User info + logout -->
-      <div class="flex items-center gap-2">
-        <div class="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center shrink-0">
-          <span class="text-indigo-700 dark:text-indigo-300 font-semibold text-xs">{{initial .CurrentUser.DisplayName}}</span>
-        </div>
-        <div class="leading-tight flex-1 min-w-0">
-          <p class="text-xs font-medium text-stone-800 dark:text-stone-200 truncate">{{.CurrentUser.Username}}</p>
-          <p class="text-[10px] text-stone-400 capitalize">{{.CurrentUser.Role}}</p>
-        </div>
-        <a href="/logout"
-           class="p-2 rounded-xl text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors shrink-0"
-           title="Logout">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-            <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/>
-          </svg>
-        </a>
-      </div>
-    </div>
-    {{end}}
-  </header>
+      </div><!-- /navbar-menu -->
+    </div><!-- /container -->
+  </nav>
 
   <!-- Main content -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
-    {{block "content" .}}{{end}}
+  <main class="section py-5">
+    <div class="container">
+      {{block "content" .}}{{end}}
+    </div>
   </main>
 
   <!-- Footer -->
-  <footer class="border-t border-stone-200 dark:border-stone-800 mt-12">
-    <div class="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p class="text-xs text-stone-400">
-        Copyright &copy; {{currentYear}} CERN
-      </p>
-      <div class="flex items-center gap-4">
-        <a href="mailto:FCC-PED-SoftwareAndComputing-MCProduction@cern.ch"
-           class="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-          </svg>
-          Contact us
-        </a>
-        <a href="https://github.com/kjvbrt/bob/issues"
-           target="_blank" rel="noopener noreferrer"
-           class="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
-          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-          </svg>
-          Platform issues &amp; features
-        </a>
+  <footer class="footer py-5">
+    <div class="container">
+      <div class="is-flex is-align-items-center is-justify-content-space-between is-flex-wrap-wrap" style="gap:0.75rem">
+        <p class="is-size-7 has-text-grey">
+          Copyright &copy; {{currentYear}} CERN
+        </p>
+        <div class="is-flex is-align-items-center" style="gap:1rem">
+          <a href="mailto:FCC-PED-SoftwareAndComputing-MCProduction@cern.ch"
+             class="is-flex is-align-items-center is-size-7 has-text-grey" style="gap:0.375rem">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+            Contact us
+          </a>
+          <a href="https://github.com/kjvbrt/bob/issues"
+             target="_blank" rel="noopener noreferrer"
+             class="is-flex is-align-items-center is-size-7 has-text-grey" style="gap:0.375rem">
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            Platform issues &amp; features
+          </a>
+        </div>
       </div>
     </div>
   </footer>
 
   <!-- File viewer modal -->
-  <div id="file-viewer-overlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeFileViewer()"></div>
-    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-h-[80vh] flex flex-col" style="max-width:42rem">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-800 shrink-0">
-        <span id="file-viewer-title" class="text-sm font-medium text-stone-700 dark:text-stone-300 truncate"></span>
-        <button onclick="closeFileViewer()"
-                class="shrink-0 ml-3 p-1 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-      <div id="file-viewer-content" class="overflow-auto p-4 flex-1 min-h-0"></div>
+  <div class="modal" id="file-viewer-overlay">
+    <div class="modal-background" onclick="closeFileViewer()"></div>
+    <div class="modal-card" style="width:100%;max-width:42rem">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-size-6" id="file-viewer-title"></p>
+        <button class="delete" aria-label="close" onclick="closeFileViewer()"></button>
+      </header>
+      <section class="modal-card-body" id="file-viewer-content" style="overflow:auto"></section>
     </div>
   </div>
 
-  <!-- Confirmation modal -->
-  <div id="alert-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeAlert()"></div>
-    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-w-sm p-6">
-      <p id="alert-message" class="text-sm text-stone-700 dark:text-stone-300 mb-6 leading-relaxed"></p>
-      <div class="flex items-center justify-end">
-        <button onclick="closeAlert()"
-                class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">
-          OK
-        </button>
-      </div>
+  <!-- Alert modal -->
+  <div class="modal" id="alert-overlay">
+    <div class="modal-background" onclick="closeAlert()"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <p id="alert-message" class="is-size-6"></p>
+      </section>
+      <footer class="modal-card-foot is-justify-content-flex-end">
+        <button class="button is-link" onclick="closeAlert()">OK</button>
+      </footer>
     </div>
   </div>
 
-  <div id="confirm-overlay" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeConfirm()"></div>
-    <div class="relative bg-white dark:bg-stone-900 rounded-2xl shadow-2xl z-10 w-full max-w-sm p-6">
-      <p id="confirm-message" class="text-sm text-stone-700 dark:text-stone-300 mb-6 leading-relaxed"></p>
-      <div class="flex items-center justify-end gap-3">
-        <button onclick="closeConfirm()"
-                class="px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-          Cancel
-        </button>
-        <button id="confirm-ok"
-                class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">
-          Confirm
-        </button>
-      </div>
+  <!-- Confirm modal -->
+  <div class="modal" id="confirm-overlay">
+    <div class="modal-background" onclick="closeConfirm()"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <p id="confirm-message" class="is-size-6"></p>
+      </section>
+      <footer class="modal-card-foot is-justify-content-flex-end" style="gap:0.5rem">
+        <button class="button" onclick="closeConfirm()">Cancel</button>
+        <button class="button is-link" id="confirm-ok">Confirm</button>
+      </footer>
     </div>
   </div>
 
   <script>
+    // ── Navbar burger ──────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      var burger = document.getElementById('navBurger');
+      var menu = document.getElementById('navMenu');
+      if (burger) {
+        burger.addEventListener('click', function() {
+          burger.classList.toggle('is-active');
+          menu.classList.toggle('is-active');
+        });
+      }
+    });
+
+    // ── File viewer modal ──────────────────────────────────────────────────
     function closeFileViewer() {
-      document.getElementById('file-viewer-overlay').classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
+      document.getElementById('file-viewer-overlay').classList.remove('is-active');
+      document.documentElement.classList.remove('is-clipped');
     }
 
     document.body.addEventListener('htmx:afterSwap', function(e) {
       if (e.detail.target.id === 'file-viewer-content') {
-        document.getElementById('file-viewer-overlay').classList.remove('hidden');
-        document.body.classList.add('overflow-hidden');
+        document.getElementById('file-viewer-overlay').classList.add('is-active');
+        document.documentElement.classList.add('is-clipped');
       }
-      // For outerHTML swaps the target is detached after the swap; fall back to document.
-      // data-rendered prevents double-rendering of already-processed elements.
       var root = document.contains(e.detail.target) ? e.detail.target : document;
       renderMd(root);
-      // Browser may restore a previously typed textarea value into the fresh form.
       var commentBox = document.querySelector('#activity-area textarea[name="body"]');
       if (commentBox) commentBox.value = '';
     });
@@ -307,7 +263,7 @@
       return text.replace(/#(\d+)\b/g, '[#$1](/requests/$1)');
     }
 
-function renderMd(root) {
+    function renderMd(root) {
       if (typeof marked === 'undefined' || typeof renderMathInElement === 'undefined') return;
       root = root || document;
       root.querySelectorAll('[data-md]:not([data-rendered])').forEach(function(el) {
@@ -329,7 +285,7 @@ function renderMd(root) {
 
     function applyTheme(t) {
       var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      document.documentElement.classList.toggle('dark', dark);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
     }
 
     function setTheme(t) {
@@ -351,29 +307,29 @@ function renderMd(root) {
 
     document.addEventListener('DOMContentLoaded', function() { updateThemeButtons(getTheme()); });
 
-    // ── Confirmation modal ─────────────────────────────────────────────────
+    // ── Modals ─────────────────────────────────────────────────────────────
     function showAlert(message) {
       document.getElementById('alert-message').textContent = message;
-      document.getElementById('alert-overlay').classList.remove('hidden');
-      document.body.classList.add('overflow-hidden');
+      document.getElementById('alert-overlay').classList.add('is-active');
+      document.documentElement.classList.add('is-clipped');
     }
 
     function closeAlert() {
-      document.getElementById('alert-overlay').classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
+      document.getElementById('alert-overlay').classList.remove('is-active');
+      document.documentElement.classList.remove('is-clipped');
     }
 
     function showConfirm(message, onConfirm) {
       document.getElementById('confirm-message').textContent = message;
       var ok = document.getElementById('confirm-ok');
       ok.onclick = function() { closeConfirm(); onConfirm(); };
-      document.getElementById('confirm-overlay').classList.remove('hidden');
-      document.body.classList.add('overflow-hidden');
+      document.getElementById('confirm-overlay').classList.add('is-active');
+      document.documentElement.classList.add('is-clipped');
     }
 
     function closeConfirm() {
-      document.getElementById('confirm-overlay').classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
+      document.getElementById('confirm-overlay').classList.remove('is-active');
+      document.documentElement.classList.remove('is-clipped');
     }
 
     document.addEventListener('keydown', function(e) {
@@ -402,6 +358,7 @@ function renderMd(root) {
       showConfirm(message, function() { htmx.trigger(btn, event || 'action-confirmed'); });
     }
 
+    // ── File selection helpers ─────────────────────────────────────────────
     function showSelectedFiles(input, listId) {
       var el = document.getElementById(listId);
       if (!el) return;
@@ -423,10 +380,10 @@ function renderMd(root) {
         return;
       }
       for (var i = 0; i < input.files.length; i++) {
-        var li = document.createElement('li');
-        li.className = 'text-xs text-stone-500 dark:text-stone-400';
-        li.textContent = input.files[i].name;
-        el.appendChild(li);
+        var tag = document.createElement('span');
+        tag.className = 'tag is-light is-small';
+        tag.textContent = input.files[i].name;
+        el.appendChild(tag);
       }
     }
 
@@ -474,7 +431,7 @@ function renderMd(root) {
       var toolbar = document.getElementById('batch-toolbar');
       var countEl = document.getElementById('batch-count');
       if (!toolbar) return;
-      toolbar.classList.toggle('hidden', checked.length === 0);
+      toolbar.classList.toggle('is-hidden', checked.length === 0);
       if (countEl) countEl.textContent = checked.length + ' selected';
     }
     function deselectAll() {

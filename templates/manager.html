@@ -1,32 +1,37 @@
 {{define "content"}}
-<div class="space-y-6">
 
   <!-- Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-semibold text-stone-900 dark:text-stone-100">Pipeline</h1>
-      <p class="text-sm text-stone-500 mt-0.5">Active dataset requests requiring attention</p>
-    </div>
+  <div class="mb-5">
+    <h1 class="is-size-4 has-text-weight-semibold">Pipeline</h1>
+    <p class="is-size-7 has-text-grey mt-1">Active dataset requests requiring attention</p>
   </div>
 
-  <!-- Pipeline stats -->
+  <!-- Stats -->
   {{if .Stats}}
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-    <div class="stat-card">
-      <p class="text-2xl font-bold text-amber-600">{{.Stats.Pending}}</p>
-      <p class="text-xs text-stone-500 mt-1 font-medium uppercase tracking-wide">Under Review</p>
+  <div class="columns mb-5">
+    <div class="column">
+      <div class="stat-card">
+        <p class="is-size-4 has-text-weight-bold stat-value-amber">{{.Stats.Pending}}</p>
+        <p class="is-size-7 has-text-grey has-text-weight-medium is-uppercase" style="letter-spacing:.05em;margin-top:.25rem">Under Review</p>
+      </div>
     </div>
-    <div class="stat-card">
-      <p class="text-2xl font-bold text-violet-600">{{.Stats.InProgress}}</p>
-      <p class="text-xs text-stone-500 mt-1 font-medium uppercase tracking-wide">In Progress</p>
+    <div class="column">
+      <div class="stat-card">
+        <p class="is-size-4 has-text-weight-bold stat-value-violet">{{.Stats.InProgress}}</p>
+        <p class="is-size-7 has-text-grey has-text-weight-medium is-uppercase" style="letter-spacing:.05em;margin-top:.25rem">In Progress</p>
+      </div>
     </div>
-    <div class="stat-card">
-      <p class="text-2xl font-bold text-red-500">{{.Stats.Critical}}</p>
-      <p class="text-xs text-stone-500 mt-1 font-medium uppercase tracking-wide">Critical</p>
+    <div class="column">
+      <div class="stat-card">
+        <p class="is-size-4 has-text-weight-bold has-text-danger">{{.Stats.Critical}}</p>
+        <p class="is-size-7 has-text-grey has-text-weight-medium is-uppercase" style="letter-spacing:.05em;margin-top:.25rem">Critical</p>
+      </div>
     </div>
-    <div class="stat-card">
-      <p class="text-2xl font-bold text-stone-700">{{.Stats.Total}}</p>
-      <p class="text-xs text-stone-500 mt-1 font-medium uppercase tracking-wide">Total</p>
+    <div class="column">
+      <div class="stat-card">
+        <p class="is-size-4 has-text-weight-bold">{{.Stats.Total}}</p>
+        <p class="is-size-7 has-text-grey has-text-weight-medium is-uppercase" style="letter-spacing:.05em;margin-top:.25rem">Total</p>
+      </div>
     </div>
   </div>
   {{end}}
@@ -34,10 +39,9 @@
   <!-- Batch toolbar -->
   {{template "batch_toolbar" .}}
 
-  <!-- Active request list -->
-  <div id="request-list-area">
+  <!-- Request list -->
+  <div id="request-list-area" class="mt-4">
     {{template "request_list" .}}
   </div>
 
-</div>
 {{end}}

@@ -34,7 +34,7 @@ sure nothing falls through the cracks.
 | Layer     | Technology                                                              |
 |-----------|-------------------------------------------------------------------------|
 | Backend   | Go 1.22+ (`net/http` standard library)                                  |
-| Frontend  | HTMX 2 + Tailwind CSS (self-hosted, compiled)                           |
+| Frontend  | HTMX 2 + Bulma 1.0 CSS (self-hosted, pre-built)                         |
 | Database  | SQLite (local dev, no CGO) / PostgreSQL via CERN DBOD (production)      |
 | Auth      | CERN SSO via OpenID Connect (Keycloak)                                  |
 | Math/MD   | KaTeX + marked.js (self-hosted)                                         |
@@ -75,15 +75,13 @@ go build -tags prod -o fcc-drs ./cmd/fcc-drs
 
 ### Front-end assets
 
-All JS/CSS dependencies (HTMX, Tailwind CSS, KaTeX, marked, Inter font) are self-hosted under `static/vendor/`. To download them and regenerate the compiled Tailwind CSS:
+All JS/CSS dependencies (HTMX, Bulma CSS, KaTeX, marked, Inter font) are self-hosted under `static/vendor/`. To download them:
 
 ```bash
 ./scripts/download-assets.sh
 ```
 
-Run this once after cloning and again whenever you modify templates (Tailwind only includes classes it finds in the templates).
-
-> **TODO:** Replace the Tailwind CLI build step with hand-crafted utility classes in `style.css`, eliminating the build dependency entirely.
+Run this once after cloning. No build step is required — Bulma is a pre-built CSS file.
 
 The server starts on **http://localhost:5050**. The SQLite database is created automatically at `./data/requests.db` on first run (dev mode only).
 
