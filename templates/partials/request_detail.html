@@ -1,11 +1,11 @@
 {{define "request_detail"}}
 {{$d := .}}
 {{with .Request}}
-<div class="p-6">
+<div class="p-5">
   <!-- Header -->
-  <div class="flex items-start justify-between mb-6">
-    <div class="flex-1 min-w-0 mr-4">
-      <div class="flex items-center gap-2 mb-2">
+  <div class="is-flex is-align-items-flex-start is-justify-content-space-between mb-5">
+    <div class="is-grow-1 min-w-0 mr-4">
+      <div class="is-flex is-align-items-center gap-2 mb-3">
         {{if $d.CurrentUser.IsManager}}
         <select name="status"
                 hx-post="/requests/{{.ID}}/status"
@@ -41,117 +41,102 @@
           <option value="critical" style="background:#fee2e2;color:#dc2626" {{if eq .Priority "critical"}}selected{{end}}>Critical</option>
         </select>
         {{else}}
-        <span class="inline-flex items-center gap-1.5">
+        <span class="is-flex is-align-items-center gap-2">
           <span class="priority-pip {{priorityClass .Priority}}"></span>
-          <span class="text-xs text-stone-500">{{.PriorityLabel}}</span>
+          <span class="is-size-7 has-text-grey">{{.PriorityLabel}}</span>
         </span>
         {{end}}
       </div>
       <div id="ds-title">{{template "detail_section_title" $d}}</div>
     </div>
-    <div class="flex items-center gap-1 shrink-0">
-      <!-- Back to list -->
-      <a href="#" onclick="history.back(); return false;"
-         class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-         title="Back">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <a href="#" onclick="history.back(); return false;"
+       class="button is-ghost is-small is-shrink-0" title="Back">
+      <span class="icon">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
         </svg>
-        Back
-      </a>
-    </div>
+      </span>
+      <span>Back</span>
+    </a>
   </div>
 
   <div id="ds-description">{{template "detail_section_description" $d}}</div>
   <div id="ds-tags">{{template "detail_section_tags" $d}}</div>
 
-  <!-- Parallel approval tracks (always visible for managers on non-draft requests; visible to others when a decision exists) -->
+  <!-- Approval tracks -->
   {{if and (ne .Status "draft") (or $d.CurrentUser.IsManager (ne .PhysicsApproval "") (ne .ResourcesApproval ""))}}
   <div class="mb-5">
     <span class="detail-label block mb-2">Approvals</span>
-    <div class="space-y-2">
 
-      <!-- Physics approval -->
-      <div class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
-        <div class="flex items-center gap-2.5">
-          <span class="text-sm font-medium text-stone-700 dark:text-stone-300">Physics</span>
-          {{if eq .PhysicsApproval "approved"}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Approved</span>
-          {{else if eq .PhysicsApproval "rejected"}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Rejected</span>
-          {{else}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>
-          {{end}}
-        </div>
-        {{if $d.CurrentUser.IsManager}}
-        <div class="flex items-center gap-1.5">
-          {{if eq .PhysicsApproval ""}}
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all">
-            Approve
-          </button>
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"rejected"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 active:scale-95 transition-all border border-red-200 dark:border-red-800">
-            Reject
-          </button>
-          {{else}}
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"revert"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  {{if or (eq .Status "approved") (eq .Status "rejected") (eq .Status "completed") (eq .Status "in_progress")}}
-                  hx-trigger="action-confirmed" onclick="confirmAction(this, 'Reverting this approval will move the request back to Under Review. Continue?')"
-                  {{else}}
-                  hx-trigger="click"
-                  {{end}}
-                  class="px-3 py-1 rounded-lg text-xs font-medium text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-95 transition-all border border-stone-200 dark:border-stone-600">
-            Revert
-          </button>
-          {{end}}
-        </div>
+    <!-- Physics -->
+    <div class="panel-row mb-2">
+      <div class="is-flex is-align-items-center gap-2">
+        <span class="is-size-7 has-text-weight-medium has-text-grey-dark">Physics</span>
+        {{if eq .PhysicsApproval "approved"}}
+        <span class="tag is-success is-light is-rounded">Approved</span>
+        {{else if eq .PhysicsApproval "rejected"}}
+        <span class="tag is-danger is-light is-rounded">Rejected</span>
+        {{else}}
+        <span class="tag is-warning is-light is-rounded">Pending</span>
         {{end}}
       </div>
-
-      <!-- Resources approval -->
-      <div class="flex items-center justify-between px-3 py-2.5 rounded-xl bg-stone-50 dark:bg-stone-800 border border-stone-100 dark:border-stone-700">
-        <div class="flex items-center gap-2.5">
-          <span class="text-sm font-medium text-stone-700 dark:text-stone-300">Resources</span>
-          {{if eq .ResourcesApproval "approved"}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Approved</span>
-          {{else if eq .ResourcesApproval "rejected"}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Rejected</span>
-          {{else}}
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">Pending</span>
-          {{end}}
-        </div>
-        {{if $d.CurrentUser.IsManager}}
-        <div class="flex items-center gap-1.5">
-          {{if eq .ResourcesApproval ""}}
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all">
-            Approve
-          </button>
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"rejected"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  class="px-3 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 active:scale-95 transition-all border border-red-200 dark:border-red-800">
-            Reject
-          </button>
-          {{else}}
-          <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"revert"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
-                  {{if or (eq .Status "approved") (eq .Status "rejected") (eq .Status "completed") (eq .Status "in_progress")}}
-                  hx-trigger="action-confirmed" onclick="confirmAction(this, 'Reverting this approval will move the request back to Under Review. Continue?')"
-                  {{else}}
-                  hx-trigger="click"
-                  {{end}}
-                  class="px-3 py-1 rounded-lg text-xs font-medium text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 active:scale-95 transition-all border border-stone-200 dark:border-stone-600">
-            Revert
-          </button>
-          {{end}}
-        </div>
+      {{if $d.CurrentUser.IsManager}}
+      <div class="is-flex is-align-items-center gap-2">
+        {{if eq .PhysicsApproval ""}}
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                class="button is-success is-small" style="border-radius:.5rem">Approve</button>
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"rejected"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                class="button is-danger is-light is-small" style="border-radius:.5rem">Reject</button>
+        {{else}}
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"physics","decision":"revert"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                {{if or (eq .Status "approved") (eq .Status "rejected") (eq .Status "completed") (eq .Status "in_progress")}}
+                hx-trigger="action-confirmed" onclick="confirmAction(this, 'Reverting this approval will move the request back to Under Review. Continue?')"
+                {{else}}
+                hx-trigger="click"
+                {{end}}
+                class="button is-small" style="border-radius:.5rem">Revert</button>
         {{end}}
       </div>
+      {{end}}
+    </div>
 
+    <!-- Resources -->
+    <div class="panel-row">
+      <div class="is-flex is-align-items-center gap-2">
+        <span class="is-size-7 has-text-weight-medium has-text-grey-dark">Resources</span>
+        {{if eq .ResourcesApproval "approved"}}
+        <span class="tag is-success is-light is-rounded">Approved</span>
+        {{else if eq .ResourcesApproval "rejected"}}
+        <span class="tag is-danger is-light is-rounded">Rejected</span>
+        {{else}}
+        <span class="tag is-warning is-light is-rounded">Pending</span>
+        {{end}}
+      </div>
+      {{if $d.CurrentUser.IsManager}}
+      <div class="is-flex is-align-items-center gap-2">
+        {{if eq .ResourcesApproval ""}}
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"approved"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                class="button is-success is-small" style="border-radius:.5rem">Approve</button>
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"rejected"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                class="button is-danger is-light is-small" style="border-radius:.5rem">Reject</button>
+        {{else}}
+        <button hx-post="/requests/{{.ID}}/approval" hx-vals='{"track":"resources","decision":"revert"}' hx-target="closest [data-request-detail-root]" hx-swap="innerHTML"
+                {{if or (eq .Status "approved") (eq .Status "rejected") (eq .Status "completed") (eq .Status "in_progress")}}
+                hx-trigger="action-confirmed" onclick="confirmAction(this, 'Reverting this approval will move the request back to Under Review. Continue?')"
+                {{else}}
+                hx-trigger="click"
+                {{end}}
+                class="button is-small" style="border-radius:.5rem">Revert</button>
+        {{end}}
+      </div>
+      {{end}}
     </div>
   </div>
   {{end}}
 
   <div id="ds-details">{{template "detail_section_details" $d}}</div>
+
+  <!-- Generator cards -->
   <div class="mb-5">
     <span class="detail-label block mb-2">Generator Cards</span>
     <div id="generator-cards-area">{{template "generator_cards" $d}}</div>
@@ -159,6 +144,7 @@
 
   <div id="ds-notes">{{template "detail_section_notes" $d}}</div>
 
+  <!-- Relations -->
   <div class="mb-5">
     <span class="detail-label block mb-2">Related Requests</span>
     <div id="relations-area" class="mb-2">{{template "relations" $d}}</div>
@@ -166,60 +152,54 @@
     <form hx-post="/requests/{{.ID}}/relations"
           hx-target="#relations-area"
           hx-swap="innerHTML"
-          class="flex items-center gap-2">
-      <select name="type" class="form-input" style="flex:0 0 auto;width:auto;">
+          class="is-flex is-align-items-center gap-2">
+      <select name="type" class="form-input is-shrink-0" style="width:auto">
         {{range relationTypeLabels}}
         <option value="{{.Value}}">{{.Label}}</option>
         {{end}}
       </select>
-      <input type="text" name="to_id" required
-             placeholder="#request ID"
-             class="form-input min-w-0"/>
-      <button type="submit"
-              class="shrink-0 px-4 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-sm font-medium
-                     hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-        Link
-      </button>
+      <input type="text" name="to_id" required placeholder="#request ID" class="form-input min-w-0">
+      <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Link</button>
     </form>
     {{end}}
   </div>
 
   <!-- People + Timestamps -->
-  <div class="border-t border-stone-100 dark:border-stone-800 pt-4 mb-5">
-    <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-      <div>
-        <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide block mb-0.5">Requester</span>
-        <span class="text-sm text-stone-700 dark:text-stone-300 font-medium">{{.RequesterName}}</span>
-        {{if .RequesterEmail}}<a href="mailto:{{.RequesterEmail}}" class="text-xs text-indigo-500 hover:underline block">{{.RequesterEmail}}</a>{{end}}
+  <div class="pt-4 mb-5 has-divider-top">
+    <div class="columns is-multiline">
+      <div class="column is-half">
+        <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Requester</span>
+        <span class="is-size-7 has-text-weight-medium has-text-grey-dark">{{.RequesterName}}</span>
+        {{if .RequesterEmail}}<a href="mailto:{{.RequesterEmail}}" class="is-size-7 has-text-link is-block">{{.RequesterEmail}}</a>{{end}}
       </div>
       {{template "assignment" $d}}
-      <div>
-        <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide block mb-0.5">Created</span>
-        <span class="text-sm text-stone-500 dark:text-stone-400">{{formatDateTime .CreatedAt}}</span>
+      <div class="column is-half">
+        <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Created</span>
+        <span class="is-size-7 has-text-grey">{{formatDateTime .CreatedAt}}</span>
       </div>
-      <div>
-        <span class="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide block mb-0.5">Last Updated</span>
-        <span class="text-sm text-stone-500 dark:text-stone-400">{{formatDateTime .UpdatedAt}}</span>
+      <div class="column is-half">
+        <span class="detail-label is-uppercase block mb-1" style="font-size:.65rem;letter-spacing:.05em">Last Updated</span>
+        <span class="is-size-7 has-text-grey">{{formatDateTime .UpdatedAt}}</span>
       </div>
     </div>
   </div>
 
   <!-- Actions -->
-  <div class="flex items-center justify-between pt-4">
-    <!-- Left: destructive / secondary actions -->
-    <div class="flex items-center gap-2">
+  <div class="is-flex is-align-items-center is-justify-content-space-between pt-4">
+    <div class="is-flex is-align-items-center gap-2">
       {{if or $d.CurrentUser.IsManager (and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "draft"))}}
       <button
         hx-delete="/requests/{{.ID}}"
         hx-trigger="action-confirmed"
         hx-swap="none"
         onclick="confirmAction(this, 'Delete this request? This cannot be undone.')"
-        class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-red-500 text-sm font-medium
-               hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-        </svg>
-        Delete
+        class="button is-danger is-light is-small" style="border-radius:.5rem">
+        <span class="icon">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </span>
+        <span>Delete</span>
       </button>
       {{end}}
       {{if and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "pending")}}
@@ -230,21 +210,19 @@
         hx-swap="innerHTML"
         hx-trigger="action-confirmed"
         onclick="confirmAction(this, 'Cancel this request?')"
-        class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-red-500 text-sm font-medium
-               hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+        class="button is-danger is-light is-small" style="border-radius:.5rem">
         Cancel Request
       </button>
       {{end}}
     </div>
-    <!-- Right: Clone + primary action -->
-    <div class="flex items-center gap-2">
-      <a href="/requests/{{.ID}}/clone"
-         class="flex items-center gap-2 px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium
-                hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-        </svg>
-        Clone
+    <div class="is-flex is-align-items-center gap-2">
+      <a href="/requests/{{.ID}}/clone" class="button is-small" style="border-radius:.5rem">
+        <span class="icon">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+        </span>
+        <span>Clone</span>
       </a>
       {{if and (eq .CreatedBy $d.CurrentUser.ID) (eq .Status "pending")}}
       <button
@@ -254,8 +232,7 @@
         hx-swap="innerHTML"
         hx-trigger="action-confirmed"
         onclick="confirmAction(this, 'Withdraw this request to draft?')"
-        class="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 text-sm font-medium
-               hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors">
+        class="button is-warning is-light is-small" style="border-radius:.5rem">
         Withdraw to Draft
       </button>
       {{end}}
@@ -266,14 +243,13 @@
         hx-vals='{"status":"pending"}'
         hx-target="closest [data-request-detail-root]"
         hx-swap="innerHTML"
-        class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium
-               hover:bg-indigo-700 active:scale-95 transition-all shadow-sm">
+        class="button is-link is-small" style="border-radius:.5rem">
         Submit Request
       </button>
       {{else}}
       <button disabled
               title="Fill in Description, Group/Team, Use Case, Processing Stage, Format, and Event Count before submitting"
-              class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-stone-200 dark:bg-stone-700 text-stone-400 dark:text-stone-500 text-sm font-medium cursor-not-allowed">
+              class="button is-small" style="border-radius:.5rem" disabled>
         Submit Request
       </button>
       {{end}}
@@ -281,9 +257,7 @@
     </div>
   </div>
 
-  <!-- Activity / comments -->
   {{template "activity" $d}}
-
 </div>
 {{end}}
 {{end}}

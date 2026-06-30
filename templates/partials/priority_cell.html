@@ -14,9 +14,9 @@
   <option value="critical" {{if eq .Priority "critical"}}selected{{end}}>Critical</option>
 </select>
 {{else}}
-<span class="inline-flex items-center gap-1.5">
+<span class="is-flex is-align-items-center gap-2">
   <span class="priority-pip {{priorityClass .Priority}}"></span>
-  <span class="text-xs text-stone-600">{{.PriorityLabel}}</span>
+  <span class="is-size-7 has-text-grey-dark">{{.PriorityLabel}}</span>
 </span>
 {{end}}
 {{end}}

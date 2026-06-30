@@ -1,13 +1,13 @@
 {{/* ────── Title ────────────────────────────────────────────────────────── */}}
 {{define "detail_section_title"}}
 {{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
-<div class="flex items-start gap-1.5">
-  <h2 class="text-xl font-semibold text-stone-900 dark:text-stone-100 leading-snug" data-md-inline>{{.Request.Title}}</h2>
+<div class="is-flex is-align-items-flex-start gap-2">
+  <h2 class="is-size-5 has-text-weight-semibold" data-md-inline style="line-height:1.35">{{.Request.Title}}</h2>
   {{if $canEdit}}
   <button hx-get="/requests/{{.Request.ID}}/section/title/edit"
           hx-target="#ds-title" hx-swap="innerHTML"
-          class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          class="btn-icon is-shrink-0">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
       <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
     </svg>
   </button>
@@ -17,16 +17,15 @@
 
 {{define "detail_edit_title"}}
 <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-title" hx-swap="innerHTML"
-      class="flex items-center gap-2">
+      class="is-flex is-align-items-center gap-2">
   <input type="hidden" name="_section" value="title">
   <input type="text" name="title" value="{{.Request.Title}}" required autocomplete="off"
-         class="form-input flex-1" autofocus>
-  <button type="submit"
-          class="shrink-0 px-3 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">Save</button>
+         class="form-input is-grow-1" autofocus>
+  <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Save</button>
   <button type="button"
           hx-get="/requests/{{.Request.ID}}/section/title"
           hx-target="#ds-title" hx-swap="innerHTML"
-          class="shrink-0 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Cancel</button>
+          class="button is-small is-shrink-0" style="border-radius:.5rem">Cancel</button>
 </form>
 {{end}}
 
@@ -36,43 +35,43 @@
 {{$isDraft := eq .Request.Status "draft"}}
 {{if .Request.Description}}
 <div class="mb-5">
-  <div class="flex items-center gap-1.5 mb-1">
+  <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Description</span>
     {{if $canEdit}}
     <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
             hx-target="#ds-description" hx-swap="innerHTML"
-            class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="btn-icon">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
       </svg>
     </button>
     {{end}}
   </div>
-  <div class="bg-stone-50 dark:bg-stone-800/50 rounded-2xl p-4">
-    <div class="prose-md text-sm text-stone-700 dark:text-stone-300 leading-relaxed" data-md>{{.Request.Description}}</div>
+  <div class="prose-block">
+    <div class="prose-md is-size-7 has-text-grey-dark" data-md style="line-height:1.6">{{.Request.Description}}</div>
   </div>
 </div>
 {{else if $isDraft}}
 <div class="mb-5">
-  <div class="flex items-center gap-1.5 mb-1">
+  <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Description</span>
     {{if $canEdit}}
     <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
             hx-target="#ds-description" hx-swap="innerHTML"
-            class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="btn-icon">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
       </svg>
     </button>
     {{end}}
   </div>
-  <div style="background:#fff5f5;border:1px solid #fecaca;border-radius:1rem;padding:1rem;min-height:3rem;"></div>
+  <div class="detail-item detail-item--required" style="min-height:3rem"></div>
 </div>
 {{else if $canEdit}}
 <div class="mb-5">
   <button hx-get="/requests/{{.Request.ID}}/section/description/edit"
           hx-target="#ds-description" hx-swap="innerHTML"
-          class="text-sm text-stone-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
+          class="is-size-7 has-text-grey" style="background:none;border:none;cursor:pointer;transition:color .15s" onmouseover="this.style.color='var(--bulma-link)'" onmouseout="this.style.color=''">
     + Add description
   </button>
 </div>
@@ -81,19 +80,17 @@
 
 {{define "detail_edit_description"}}
 <div class="mb-5">
-  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-description" hx-swap="innerHTML"
-        class="space-y-2">
+  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-description" hx-swap="innerHTML">
     <input type="hidden" name="_section" value="description">
     <textarea name="description" rows="4" autocomplete="off"
               placeholder="Physics process, energy range, detector concept, selection criteria…"
-              class="form-input resize-none w-full">{{.Request.Description}}</textarea>
-    <div class="flex gap-2 justify-end">
+              class="form-input mb-2" style="resize:none">{{.Request.Description}}</textarea>
+    <div class="is-flex gap-2 is-justify-content-flex-end">
       <button type="button"
               hx-get="/requests/{{.Request.ID}}/section/description"
               hx-target="#ds-description" hx-swap="innerHTML"
-              class="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Cancel</button>
-      <button type="submit"
-              class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">Save</button>
+              class="button is-small" style="border-radius:.5rem">Cancel</button>
+      <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
     </div>
   </form>
 </div>
@@ -104,21 +101,21 @@
 {{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{if or .Request.TagList $canEdit}}
 <div class="mb-5">
-  <div class="flex items-center gap-1.5 mb-1">
+  <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Tags</span>
     {{if $canEdit}}
     <button hx-get="/requests/{{.Request.ID}}/section/tags/edit"
             hx-target="#ds-tags" hx-swap="innerHTML"
-            class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="btn-icon">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
       </svg>
     </button>
     {{end}}
   </div>
   {{if .Request.TagList}}
-  <div class="flex flex-wrap gap-1.5">
-    {{range .Request.TagList}}<span class="tag">{{.}}</span>{{end}}
+  <div class="is-flex is-flex-wrap-wrap gap-2">
+    {{range .Request.TagList}}<span class="tag-drs">{{.}}</span>{{end}}
   </div>
   {{end}}
 </div>
@@ -128,17 +125,16 @@
 {{define "detail_edit_tags"}}
 <div class="mb-5">
   <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-tags" hx-swap="innerHTML"
-        class="flex items-center gap-2">
+        class="is-flex is-align-items-center gap-2">
     <input type="hidden" name="_section" value="tags">
     <input type="text" name="tags" value="{{.Request.Tags}}" autocomplete="off"
            placeholder="e.g. fcc-hh, fcc-ee, higgs, top, ewk, bsm"
-           class="form-input flex-1">
+           class="form-input is-grow-1">
     <button type="button"
             hx-get="/requests/{{.Request.ID}}/section/tags"
             hx-target="#ds-tags" hx-swap="innerHTML"
-            class="shrink-0 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Cancel</button>
-    <button type="submit"
-            class="shrink-0 px-3 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">Save</button>
+            class="button is-small is-shrink-0" style="border-radius:.5rem">Cancel</button>
+    <button type="submit" class="button is-link is-small is-shrink-0" style="border-radius:.5rem">Save</button>
   </form>
 </div>
 {{end}}
@@ -148,79 +144,87 @@
 {{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{$isDraft := eq .Request.Status "draft"}}
 <div class="mb-5">
-  <div class="flex items-center gap-2 mb-2">
+  <div class="is-flex is-align-items-center gap-2 mb-2">
     <span class="detail-label">Request Details</span>
     {{if $canEdit}}
     <button hx-get="/requests/{{.Request.ID}}/section/details/edit"
             hx-target="#ds-details" hx-swap="innerHTML"
-            class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="btn-icon">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
       </svg>
     </button>
     {{end}}
   </div>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div class="columns is-multiline is-variable is-3">
     {{if or .Request.Department $isDraft}}
-    <div class="detail-item{{if not .Request.Department}} detail-item--required{{end}}">
-      <span class="detail-label">Group / Team</span>
-      {{if .Request.Department}}
-      <span class="detail-value">{{.Request.Department}}</span>
-      {{end}}
+    <div class="column is-half">
+      <div class="detail-item{{if not .Request.Department}} detail-item--required{{end}}">
+        <span class="detail-label">Group / Team</span>
+        {{if .Request.Department}}<span class="detail-value">{{.Request.Department}}</span>{{end}}
+      </div>
     </div>
     {{end}}
     {{if or .Request.UseCase $isDraft}}
-    <div class="detail-item{{if not .Request.UseCase}} detail-item--required{{end}}">
-      <span class="detail-label">Use Case</span>
-      {{if .Request.UseCase}}
-      <span class="detail-value">{{.Request.UseCaseLabel}}</span>
-      {{end}}
+    <div class="column is-half">
+      <div class="detail-item{{if not .Request.UseCase}} detail-item--required{{end}}">
+        <span class="detail-label">Use Case</span>
+        {{if .Request.UseCase}}<span class="detail-value">{{.Request.UseCaseLabel}}</span>{{end}}
+      </div>
     </div>
     {{end}}
-    <div class="detail-item{{if and $isDraft (not .Request.DatasetType)}} detail-item--required{{end}}">
-      <span class="detail-label">Final Processing Stage</span>
-      {{if .Request.DatasetType}}
-      <span class="detail-value">{{.Request.DatasetTypeLabel}}</span>
-      {{end}}
+    <div class="column is-half">
+      <div class="detail-item{{if and $isDraft (not .Request.DatasetType)}} detail-item--required{{end}}">
+        <span class="detail-label">Final Processing Stage</span>
+        {{if .Request.DatasetType}}<span class="detail-value">{{.Request.DatasetTypeLabel}}</span>{{end}}
+      </div>
     </div>
     {{if or .Request.Format $isDraft}}
-    <div class="detail-item{{if not .Request.Format}} detail-item--required{{end}}">
-      <span class="detail-label">Format</span>
-      {{if .Request.Format}}
-      <span class="detail-value">{{.Request.Format}}</span>
-      {{end}}
+    <div class="column is-half">
+      <div class="detail-item{{if not .Request.Format}} detail-item--required{{end}}">
+        <span class="detail-label">Format</span>
+        {{if .Request.Format}}<span class="detail-value">{{.Request.Format}}</span>{{end}}
+      </div>
     </div>
     {{end}}
     {{if or .Request.Statistics $isDraft}}
-    <div class="detail-item{{if not .Request.Statistics}} detail-item--required{{end}}">
-      <span class="detail-label">Statistics</span>
-      {{if .Request.Statistics}}
-      <span class="detail-value">{{.Request.Statistics}}</span>
-      {{end}}
+    <div class="column is-half">
+      <div class="detail-item{{if not .Request.Statistics}} detail-item--required{{end}}">
+        <span class="detail-label">Statistics</span>
+        {{if .Request.Statistics}}<span class="detail-value">{{.Request.Statistics}}</span>{{end}}
+      </div>
     </div>
     {{end}}
     {{if .Request.EstimatedSize}}
-    <div class="detail-item">
-      <span class="detail-label">Estimated Size</span>
-      <span class="detail-value">{{.Request.EstimatedSize}}</span>
+    <div class="column is-half">
+      <div class="detail-item">
+        <span class="detail-label">Estimated Size</span>
+        <span class="detail-value">{{.Request.EstimatedSize}}</span>
+      </div>
     </div>
     {{end}}
     {{if .Request.TargetCampaign}}
-    <div class="detail-item">
-      <span class="detail-label">Target Campaign</span>
-      <span class="detail-value">{{.Request.TargetCampaign}}</span>
+    <div class="column is-half">
+      <div class="detail-item">
+        <span class="detail-label">Target Campaign</span>
+        <span class="detail-value">{{.Request.TargetCampaign}}</span>
+      </div>
     </div>
     {{end}}
     {{if .Request.Key4hepStack}}
-    <div class="detail-item">
-      <span class="detail-label">Key4hep Stack</span>
-      <span class="detail-value">{{.Request.Key4hepStack}}</span>
+    <div class="column is-half">
+      <div class="detail-item">
+        <span class="detail-label">Key4hep Stack</span>
+        <span class="detail-value">{{.Request.Key4hepStack}}</span>
+      </div>
     </div>
     {{end}}
     {{if .Request.DueDate}}
-    <div class="detail-item">
-      <span class="detail-label">Due Date</span>
-      <span class="detail-value">{{.Request.DueDate}}</span>
+    <div class="column is-half">
+      <div class="detail-item">
+        <span class="detail-label">Due Date</span>
+        <span class="detail-value">{{.Request.DueDate}}</span>
+      </div>
     </div>
     {{end}}
   </div>
@@ -232,19 +236,18 @@
 <div class="mb-5">
   <form hx-patch="/requests/{{$req.ID}}" hx-target="#ds-details" hx-swap="innerHTML">
     <input type="hidden" name="_section" value="details">
-    <div class="flex items-center justify-between mb-3">
+    <div class="is-flex is-align-items-center is-justify-content-space-between mb-3">
       <span class="detail-label">Request Details</span>
-      <div class="flex items-center gap-2">
+      <div class="is-flex gap-2">
         <button type="button"
                 hx-get="/requests/{{$req.ID}}/section/details"
                 hx-target="#ds-details" hx-swap="innerHTML"
-                class="text-xs px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Cancel</button>
-        <button type="submit"
-                class="text-xs px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 active:scale-95 transition-all">Save</button>
+                class="button is-small" style="border-radius:.5rem">Cancel</button>
+        <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
       </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
+    <div class="columns is-multiline is-variable is-3">
+      <div class="column is-half">
         <label class="form-label">Group / Team</label>
         {{$dept := $req.Department}}
         <select name="department" class="form-input">
@@ -279,7 +282,7 @@
           </optgroup>
         </select>
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Use Case</label>
         {{$uc := $req.UseCase}}
         <select name="use_case" class="form-input">
@@ -289,7 +292,7 @@
           {{end}}
         </select>
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Final Processing Stage</label>
         {{$dt := $req.DatasetType}}
         <select name="dataset_type" class="form-input">
@@ -299,7 +302,7 @@
           {{end}}
         </select>
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Format</label>
         {{$fmt := $req.Format}}
         <select name="format" class="form-input">
@@ -314,31 +317,31 @@
           <option value="Other"        {{if eq $fmt "Other"}}selected{{end}}>Other</option>
         </select>
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Statistics</label>
         <input type="text" name="statistics" value="{{$req.Statistics}}"
                placeholder="e.g. 10M events" class="form-input">
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Estimated Size</label>
         <input type="text" name="estimated_size" value="{{$req.EstimatedSize}}"
                placeholder="e.g. 500 GB" class="form-input">
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Target Campaign</label>
         <input type="text" name="target_campaign" value="{{$req.TargetCampaign}}"
                placeholder="e.g. Spring2026" class="form-input">
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Key4hep Stack</label>
         <input type="text" name="key4hep_stack" value="{{$req.Key4hepStack}}"
                placeholder="e.g. key4hep-2024-03-10" class="form-input">
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Due Date</label>
         <input type="date" name="due_date" value="{{$req.DueDate}}" class="form-input">
       </div>
-      <div>
+      <div class="column is-half">
         <label class="form-label">Priority</label>
         {{$pri := $req.Priority}}
         <select name="priority" class="form-input">
@@ -358,21 +361,21 @@
 {{$canEdit := or .CurrentUser.IsManager (and (eq .Request.CreatedBy .CurrentUser.ID) (or (eq .Request.Status "draft") (eq .Request.Status "pending")))}}
 {{if or .Request.Notes $canEdit}}
 <div class="mb-5">
-  <div class="flex items-center gap-1.5 mb-1">
+  <div class="is-flex is-align-items-center gap-2 mb-1">
     <span class="detail-label">Additional Notes</span>
     {{if $canEdit}}
     <button hx-get="/requests/{{.Request.ID}}/section/notes/edit"
             hx-target="#ds-notes" hx-swap="innerHTML"
-            class="p-1 rounded-lg text-stone-300 dark:text-stone-600 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors">
-      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            class="btn-icon">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
       </svg>
     </button>
     {{end}}
   </div>
   {{if .Request.Notes}}
-  <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/50 rounded-xl p-3">
-    <p class="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">{{.Request.Notes}}</p>
+  <div class="prose-block-notes">
+    <p class="is-size-7 has-text-grey-dark" style="line-height:1.6">{{.Request.Notes}}</p>
   </div>
   {{end}}
 </div>
@@ -381,20 +384,18 @@
 
 {{define "detail_edit_notes"}}
 <div class="mb-5">
-  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-notes" hx-swap="innerHTML"
-        class="space-y-2">
+  <form hx-patch="/requests/{{.Request.ID}}" hx-target="#ds-notes" hx-swap="innerHTML">
     <input type="hidden" name="_section" value="notes">
     <label class="form-label">Additional Notes</label>
     <textarea name="notes" rows="3" autocomplete="off"
               placeholder="Generator settings, beam energy, pile-up conditions, special requirements…"
-              class="form-input resize-none w-full">{{.Request.Notes}}</textarea>
-    <div class="flex gap-2 justify-end">
+              class="form-input mb-2" style="resize:none">{{.Request.Notes}}</textarea>
+    <div class="is-flex gap-2 is-justify-content-flex-end">
       <button type="button"
               hx-get="/requests/{{.Request.ID}}/section/notes"
               hx-target="#ds-notes" hx-swap="innerHTML"
-              class="px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors">Cancel</button>
-      <button type="submit"
-              class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 active:scale-95 transition-all">Save</button>
+              class="button is-small" style="border-radius:.5rem">Cancel</button>
+      <button type="submit" class="button is-link is-small" style="border-radius:.5rem">Save</button>
     </div>
   </form>
 </div>
