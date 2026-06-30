@@ -25,6 +25,7 @@
       hx-post="/requests/{{.Request.ID}}"
     {{else}}
       hx-post="/requests"
+      hx-encoding="multipart/form-data"
     {{end}}
     hx-swap="none"
     class="space-y-5">
@@ -214,6 +215,15 @@
     </div>
 
     {{if not .Request}}
+    <div>
+      <label class="form-label">Generator Card</label>
+      <div class="flex items-center gap-2">
+        <input type="file" name="generator_card"
+               onchange="checkTextFile(this)"
+               class="text-sm text-stone-500 dark:text-stone-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-stone-100 dark:file:bg-stone-700 file:text-stone-600 dark:file:text-stone-300 hover:file:bg-stone-200 dark:hover:file:bg-stone-600 file:transition-colors cursor-pointer flex-1 min-w-0">
+      </div>
+      <p class="text-xs text-stone-400 dark:text-stone-500 mt-1">Optional. Plain-text files only (e.g. .py, .cmnd, .dat). Max 1 MB.</p>
+    </div>
     <div>
       <span class="detail-label block mb-2">Related Requests</span>
       <div id="relation-rows" class="space-y-2 mb-2">

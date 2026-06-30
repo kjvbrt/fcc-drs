@@ -368,6 +368,25 @@ function renderMd(root) {
       showConfirm(message, function() { htmx.trigger(btn, event || 'action-confirmed'); });
     }
 
+    function checkTextFile(input) {
+      var file = input.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var bytes = new Uint8Array(e.target.result);
+        for (var i = 0; i < bytes.length; i++) {
+          if (bytes[i] === 0) {
+            input.setCustomValidity('Only plain-text files are accepted (binary content detected).');
+            input.reportValidity();
+            input.value = '';
+            return;
+          }
+        }
+        input.setCustomValidity('');
+      };
+      reader.readAsArrayBuffer(file.slice(0, 512));
+    }
+
     // ── Batch selection ────────────────────────────────────────────────────
     function updateBatchToolbar() {
       var checked = document.querySelectorAll('.batch-cb:checked');

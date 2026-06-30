@@ -105,6 +105,15 @@ func migrate(db *DB) error {
 			created_at TIMESTAMPTZ DEFAULT NOW(),
 			UNIQUE(from_id, to_id, type)
 		)`,
+		`CREATE TABLE IF NOT EXISTS generator_cards (
+			id          SERIAL PRIMARY KEY,
+			request_id  INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
+			filename    TEXT NOT NULL,
+			size        BIGINT NOT NULL DEFAULT 0,
+			content     BYTEA NOT NULL,
+			uploaded_by INTEGER REFERENCES users(id),
+			created_at  TIMESTAMPTZ DEFAULT NOW()
+		)`,
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS statistics TEXT DEFAULT ''`,
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS target_campaign TEXT DEFAULT ''`,
 		`ALTER TABLE dataset_requests ADD COLUMN IF NOT EXISTS key4hep_stack TEXT DEFAULT ''`,

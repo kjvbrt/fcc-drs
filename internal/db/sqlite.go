@@ -111,6 +111,16 @@ func migrate(db *DB) error {
 			UNIQUE(from_id, to_id, type)
 		);
 
+		CREATE TABLE IF NOT EXISTS generator_cards (
+			id          INTEGER PRIMARY KEY AUTOINCREMENT,
+			request_id  INTEGER NOT NULL REFERENCES dataset_requests(id) ON DELETE CASCADE,
+			filename    TEXT NOT NULL,
+			size        INTEGER NOT NULL DEFAULT 0,
+			content     BLOB NOT NULL,
+			uploaded_by INTEGER REFERENCES users(id),
+			created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+		);
+
 		CREATE TRIGGER IF NOT EXISTS update_timestamp
 		AFTER UPDATE ON dataset_requests
 		BEGIN

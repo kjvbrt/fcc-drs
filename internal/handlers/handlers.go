@@ -17,25 +17,27 @@ import (
 )
 
 type Handler struct {
-	requests  *models.RequestStore
-	users     *models.UserStore
-	updates   *models.UpdateStore
-	relations *models.RelationStore
-	oidc      *auth.Client
-	funcMap   template.FuncMap
-	devMode   bool
-	emailCfg  email.Config
+	requests       *models.RequestStore
+	users          *models.UserStore
+	updates        *models.UpdateStore
+	relations      *models.RelationStore
+	generatorCards *models.GeneratorCardStore
+	oidc           *auth.Client
+	funcMap        template.FuncMap
+	devMode        bool
+	emailCfg       email.Config
 }
 
 func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool) *Handler {
 	h := &Handler{
-		requests:  models.NewRequestStore(db, driver),
-		users:     models.NewUserStore(db, driver),
-		updates:   models.NewUpdateStore(db, driver),
-		relations: models.NewRelationStore(db, driver),
-		oidc:      oidcClient,
-		devMode:   devMode,
-		emailCfg:  email.ConfigFromEnv(),
+		requests:       models.NewRequestStore(db, driver),
+		users:          models.NewUserStore(db, driver),
+		updates:        models.NewUpdateStore(db, driver),
+		relations:      models.NewRelationStore(db, driver),
+		generatorCards: models.NewGeneratorCardStore(db, driver),
+		oidc:           oidcClient,
+		devMode:        devMode,
+		emailCfg:       email.ConfigFromEnv(),
 	}
 	h.funcMap = template.FuncMap{
 		"useCaseLabels":        func() []models.Option { return models.UseCaseLabels },
@@ -47,6 +49,7 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool) *Hand
 		"formatDate":     formatDate,
 		"formatDateTime": formatDateTime,
 		"timeAgo":        timeAgo,
+		"formatSize":     formatSize,
 		"add":            func(a, b int) int { return a + b },
 		"currentYear":    func() int { return time.Now().Year() },
 		"initial": func(s string) string {
@@ -179,6 +182,17 @@ func formatDateTime(t time.Time) string {
 	return t.Format("Jan 2, 2006 15:04")
 }
 
+func formatSize(n int64) string {
+	switch {
+	case n < 1024:
+		return fmt.Sprintf("%d B", n)
+	case n < 1024*1024:
+		return fmt.Sprintf("%.1f KB", float64(n)/1024)
+	default:
+		return fmt.Sprintf("%.1f MB", float64(n)/1024/1024)
+	}
+}
+
 func timeAgo(t time.Time) string {
 	if t.IsZero() {
 		return "—"
@@ -226,8 +240,9 @@ type PageData struct {
 	DevMode     bool
 	Updates     []*models.Update
 	Managers    []*models.User
-	Relations   []*models.Relation
-	Clone       *models.DatasetRequest
+	Relations      []*models.Relation
+	GeneratorCards []*models.GeneratorCard
+	Clone          *models.DatasetRequest
 	Comment     *models.Update
 	IsPage      bool // true when rendered as a standalone page, not a modal fragment
 }
@@ -382,9 +397,15 @@ func (h *Handler) NewRequestForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Bad Request", 400)
-		return
+	if err := r.ParseMultipartForm(maxGeneratorCardSize + 512); err != nil {
+		if err != http.ErrNotMultipart {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
+		if err := r.ParseForm(); err != nil {
+			http.Error(w, "Bad Request", 400)
+			return
+		}
 	}
 
 	status := models.Status(r.FormValue("status"))
@@ -448,6 +469,7 @@ func (h *Handler) CreateRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	h.updates.Add(int(id), createdBy, models.UpdateCreated, "Request submitted by "+userName)
 	h.relations.CreateMentions(int(id), createdBy, req.Description, req.Notes)
+	h.saveGeneratorCardFromForm(r, int(id), createdBy)
 
 	relTypes := r.Form["rel_type"]
 	for i, toRaw := range r.Form["rel_to"] {
@@ -490,15 +512,16 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	activity, _ := h.updates.GetByRequestID(id)
 	managers, _ := h.users.GetManagers()
 	relations, _ := h.relations.GetByRequestID(id)
+	cards, _ := h.generatorCards.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Managers: managers, Relations: relations,
+			Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Managers: managers, Relations: relations, IsPage: true,
+		Title: req.Title, Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards, IsPage: true,
 	})
 }
 
