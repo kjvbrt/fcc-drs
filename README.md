@@ -56,7 +56,7 @@ Single binary, no CGO required. No external CDN dependencies at runtime.
 CERN SSO is bypassed in dev mode. A simple form lets you pick any username and role — no credentials required.
 
 ```bash
-git clone https://github.com/kjvbrt/fcc-drs
+git clone https://github.com/HEP-FCC/fcc-drs
 cd fcc-drs
 DEV_MODE=TRUE go run ./cmd/fcc-drs
 ```
@@ -114,69 +114,6 @@ Role assignment:
 - CERN usernames listed in `MANAGER_USERNAMES` receive the **manager** role on first login
 - All other authenticated users receive the **requester** role
 - Roles are stored in the local database and persist across logins
-
----
-
-## Project Structure
-
-```
-fcc-drs/
-├── cmd/
-│   └── fcc-drs/
-│       └── main.go               # Server entry point, routing
-├── internal/
-│   ├── auth/
-│   │   └── oidc.go               # CERN SSO OIDC client
-│   ├── db/
-│   │   ├── db.go                 # DB wrapper (Rebind, Like helpers)
-│   │   ├── sqlite.go             # SQLite init & migrations (dev, build tag: !prod)
-│   │   └── postgres.go           # PostgreSQL init & migrations (prod, build tag: prod)
-│   ├── email/
-│   │   └── email.go              # SMTP email notifications
-│   ├── middleware/
-│   │   └── auth.go               # Session middleware, role guards
-│   ├── models/
-│   │   ├── helper.go             # Driver-aware query helpers & time scanner
-│   │   ├── request.go            # Dataset request model & store
-│   │   ├── update.go             # Activity log model & store
-│   │   └── user.go               # User & session model & store
-│   └── handlers/
-│       ├── handlers.go           # HTTP handlers & template rendering
-│       ├── auth.go               # Login, callback, logout, dev login
-│       └── pipeline.go           # Manager pipeline handlers
-├── templates/
-│   ├── layout.html               # Base layout (nav, modal, theme, footer)
-│   ├── login.html                # Login page
-│   ├── index.html                # Dashboard
-│   ├── requests.html             # Request list with filters
-│   ├── manager.html              # Manager pipeline view
-│   └── partials/                 # HTMX-swappable fragments
-│       ├── stats_cards.html
-│       ├── request_list.html
-│       ├── request_form.html
-│       ├── request_detail.html
-│       ├── events.html           # Activity log + comment form
-│       ├── assignment.html       # Manager assignment dropdown
-│       ├── priority_cell.html    # Inline priority select
-│       ├── batch_toolbar.html    # Batch action toolbar
-│       └── status_badge.html
-├── static/
-│   ├── style.css                 # Custom styles (bento grid, badges, dark mode)
-│   ├── logo.png
-│   └── favicon.png
-├── openshift/                    # CERN PaaS deployment manifests
-│   ├── secret.yaml               # OIDC + DB credentials (fill in before applying)
-│   ├── configmap.yaml            # Manager usernames
-│   ├── deployment.yaml           # Deployment spec
-│   ├── service.yaml              # ClusterIP service
-│   └── route.yaml                # HTTPS route (*.web.cern.ch)
-├── Dockerfile                    # Multi-stage production image (-tags prod)
-├── data/                         # SQLite database (dev only, git-ignored)
-├── go.mod
-├── go.sum
-├── LICENSE
-└── README.md
-```
 
 ---
 
@@ -282,33 +219,12 @@ Requester identity (name, username, email) is populated automatically from CERN 
 
 ---
 
-## ToDo
-
-* Validation plots generation
-* MC Generator Card upload
-* Extensions:
-  * Extend the existing production (number of events)
-  * Continue along the event processing chain
-  * Extend number of targeted detectors
-* Add Accelerator
-* Field to specify detector option and version
-* Make campaign and Key4hep stack drop down, where one of them is required to be
-    specified
-* versioning
-* Clean up stale mention relations on request edit (currently mentions are only added, never removed if a `#N` reference is deleted from description or notes)
-* do not allow scrolling of underlying web page when modal is active
-* implement info button or whole wiki section on how to request a dataset, what
-    is the planned production schedule and so on.
-* Maybe add a banner informing about the next campaign?
-* Rename manager role to coordinator
-
-
 ---
 
 ## Contact & Support
 
 - **General questions**: [FCC-PED-SoftwareAndComputing-MCProduction@cern.ch](mailto:FCC-PED-SoftwareAndComputing-MCProduction@cern.ch)
-- **Platform issues & feature requests**: [github.com/kjvbrt/fcc-drs/issues](https://github.com/kjvbrt/fcc-drs/issues)
+- **Platform issues & feature requests**: [github.com/HEP-FCC/fcc-drs/issues](https://github.com/HEP-FCC/fcc-drs/issues)
 
 ---
 
