@@ -1,4 +1,4 @@
-VERSION := $(shell git describe --tags --always 2>/dev/null || echo "dev")
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 BINARY  := fcc-drs
 CMD     := ./cmd/fcc-drs
 
@@ -15,7 +15,7 @@ build:
 	go build -tags prod -ldflags "-X main.version=$(VERSION)" -o $(BINARY) $(CMD)
 
 build-dev:
-	go build -o $(BINARY) $(CMD)
+	go build -ldflags "-X main.version=$(VERSION)" -o $(BINARY) $(CMD)
 
 run:
 	DEV_MODE=TRUE go run $(CMD)
