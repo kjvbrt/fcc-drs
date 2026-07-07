@@ -54,6 +54,12 @@ func New(db *sql.DB, driver string, oidcClient *auth.Client, devMode bool, versi
 		"formatSize":     formatSize,
 		"add":            func(a, b int) int { return a + b },
 		"currentYear":    func() int { return time.Now().Year() },
+		"avatarURL": func(u *models.User, size int) string {
+			if u == nil {
+				return ""
+			}
+			return u.AvatarURL(size)
+		},
 		"initial": func(s string) string {
 			runes := []rune(s)
 			if len(runes) == 0 {
@@ -244,7 +250,8 @@ type PageData struct {
 	DevMode     bool
 	Version     string
 	Updates     []*models.Update
-	Managers    []*models.User
+	Users       []*models.User
+	Coordinators []*models.User
 	Relations      []*models.Relation
 	GeneratorCards []*models.GeneratorCard
 	GeneratorCard  *models.GeneratorCard
@@ -280,7 +287,7 @@ func canEdit(user *models.User, req *models.DatasetRequest) bool {
 	if user == nil {
 		return false
 	}
-	if user.IsManager() {
+	if user.IsCoordinator() {
 		return true
 	}
 	if req.CreatedBy != user.ID {
@@ -515,18 +522,18 @@ func (h *Handler) GetRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	activity, _ := h.updates.GetByRequestID(id)
-	managers, _ := h.users.GetManagers()
+	coordinators, _ := h.users.GetCoordinators()
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 
 	if r.Header.Get("HX-Request") == "true" {
 		h.renderPartial(w, r, "request_detail", PageData{
-			Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards,
+			Request: req, Updates: activity, Coordinators: coordinators, Relations: relations, GeneratorCards: cards,
 		})
 		return
 	}
 	h.renderPage(w, r, "request_detail_page", PageData{
-		Title: req.Title, Request: req, Updates: activity, Managers: managers, Relations: relations, GeneratorCards: cards,
+		Title: req.Title, Request: req, Updates: activity, Coordinators: coordinators, Relations: relations, GeneratorCards: cards,
 	})
 }
 
@@ -735,7 +742,7 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUser(r)
 	status := models.Status(r.FormValue("status"))
 
-	if !user.IsManager() {
+	if !user.IsCoordinator() {
 		if existing.CreatedBy != user.ID {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			return
@@ -785,13 +792,13 @@ func (h *Handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	updates, _ := h.updates.GetByRequestID(id)
-	managers, _ := h.users.GetManagers()
+	coordinators, _ := h.users.GetCoordinators()
 	relations, _ := h.relations.GetByRequestID(id)
 	cards, _ := h.generatorCards.GetByRequestID(id)
 	h.renderPartial(w, r, "request_detail", PageData{
 		Request:        req,
 		Updates:        updates,
-		Managers:       managers,
+		Coordinators:   coordinators,
 		Relations:      relations,
 		GeneratorCards: cards,
 	})
@@ -814,7 +821,7 @@ func (h *Handler) DeleteRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	user := middleware.GetUser(r)
 	ownerCanDelete := user != nil && req.CreatedBy == user.ID && req.Status == models.StatusDraft
-	if !user.IsManager() && !ownerCanDelete {
+	if !user.IsCoordinator() && !ownerCanDelete {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
@@ -914,9 +921,9 @@ func (h *Handler) ApprovalDecision(w http.ResponseWriter, r *http.Request) {
 	// Reload again after potential status change.
 	req, _ = h.requests.GetByID(id)
 	updates, _ := h.updates.GetByRequestID(id)
-	managers, _ := h.users.GetManagers()
+	coordinators, _ := h.users.GetCoordinators()
 	relations, _ := h.relations.GetByRequestID(id)
-	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Managers: managers, Relations: relations})
+	h.renderPartial(w, r, "request_detail", PageData{Request: req, Updates: updates, Coordinators: coordinators, Relations: relations})
 }
 
 func (h *Handler) GetStats(w http.ResponseWriter, r *http.Request) {

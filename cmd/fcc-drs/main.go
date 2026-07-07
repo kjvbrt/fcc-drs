@@ -64,8 +64,14 @@ func main() {
 	mux.HandleFunc("POST /auth/dev-login", h.DevLogin) // only active when DEV_MODE=true
 	mux.HandleFunc("GET /logout", h.Logout)
 
+	// Avatar — public (served by username, cached)
+	mux.HandleFunc("GET /users/{username}/avatar", h.ServeAvatar)
+
 	// Protected routes — require authenticated session
 	mux.HandleFunc("GET /", middleware.RequireAuth(h.Dashboard))
+	mux.HandleFunc("GET /profile", middleware.RequireAuth(h.ShowProfile))
+	mux.HandleFunc("POST /profile", middleware.RequireAuth(h.UpdateProfile))
+	mux.HandleFunc("POST /profile/avatar/delete", middleware.RequireAuth(h.DeleteAvatar))
 	mux.HandleFunc("GET /requests/new", middleware.RequireAuth(h.NewRequestForm))
 	mux.HandleFunc("GET /requests", middleware.RequireAuth(h.ListRequests))
 	mux.HandleFunc("POST /requests", middleware.RequireAuth(h.CreateRequest))
@@ -76,16 +82,20 @@ func main() {
 	mux.HandleFunc("GET /api/stats", middleware.RequireAuth(h.GetStats))
 	mux.HandleFunc("GET /api/recent", middleware.RequireAuth(h.GetRecent))
 
-	// Manager-only routes
-	mux.HandleFunc("GET /manager", middleware.RequireManager(h.ManagerView))
-	mux.HandleFunc("POST /requests/batch", middleware.RequireManager(h.BatchAction))
+	// Admin-only routes
+	mux.HandleFunc("GET /admin/users", middleware.RequireAdmin(h.AdminUsers))
+	mux.HandleFunc("POST /admin/users/{id}/role", middleware.RequireAdmin(h.AdminUpdateUserRole))
+
+	// Coordinator-only routes
+	mux.HandleFunc("GET /coordinator", middleware.RequireCoordinator(h.CoordinatorView))
+	mux.HandleFunc("POST /requests/batch", middleware.RequireCoordinator(h.BatchAction))
 	mux.HandleFunc("GET /requests/{id}/section/{section}", middleware.RequireAuth(h.ViewSection))
 	mux.HandleFunc("GET /requests/{id}/section/{section}/edit", middleware.RequireAuth(h.EditSection))
 	mux.HandleFunc("PATCH /requests/{id}", middleware.RequireAuth(h.PatchRequest))
 	mux.HandleFunc("POST /requests/{id}/status", middleware.RequireAuth(h.UpdateStatus))
-	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireManager(h.ApprovalDecision))
-	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireManager(h.UpdatePriority))
-	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireManager(h.AssignRequest))
+	mux.HandleFunc("POST /requests/{id}/approval", middleware.RequireCoordinator(h.ApprovalDecision))
+	mux.HandleFunc("POST /requests/{id}/priority", middleware.RequireCoordinator(h.UpdatePriority))
+	mux.HandleFunc("POST /requests/{id}/assign", middleware.RequireCoordinator(h.AssignRequest))
 	mux.HandleFunc("POST /requests/{id}/comments", middleware.RequireAuth(h.AddComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}", middleware.RequireAuth(h.GetComment))
 	mux.HandleFunc("GET /requests/{id}/comments/{comment_id}/edit", middleware.RequireAuth(h.EditCommentForm))
