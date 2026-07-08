@@ -92,20 +92,15 @@ a.navbar-item.is-active {
 
 /* ── User avatar ─────────────────────────────────────────────────────────── */
 .drs-user-avatar {
+  position: relative;
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background-color: #e0e7ff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
-.drs-user-avatar span { color: #4338ca; font-weight: 700; font-size: 0.7rem; }
-.drs-user-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
-[data-theme=dark] .drs-user-avatar { background-color: #312e81; }
-[data-theme=dark] .drs-user-avatar span { color: #a5b4fc; }
-.drs-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.navbar-item .drs-user-avatar img { max-height: none; }
+.drs-avatar--lg { width: 5rem; height: 5rem; }
 
 /* ── Theme toggle ────────────────────────────────────────────────────────── */
 .theme-toggle {
@@ -694,16 +689,20 @@ select.form-input { cursor: pointer; }
 
 /* ── Avatar circle ───────────────────────────────────────────────────────── */
 .drs-avatar {
+  position: relative;
   border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #e0e7ff;
   flex-shrink: 0;
+  overflow: hidden;
 }
-.drs-avatar span { color: #4338ca; font-weight: 700; }
-[data-theme=dark] .drs-avatar { background: #312e81; }
-[data-theme=dark] .drs-avatar span { color: #a5b4fc; }
+.drs-avatar img,
+.drs-user-avatar img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 /* ── Gap utilities (not in Bulma 1.0.4) ─────────────────────────────────── */
 .gap-1 { gap: 0.25rem !important; }
