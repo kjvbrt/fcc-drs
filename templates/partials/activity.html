@@ -1,6 +1,10 @@
 {{define "activity"}}
 {{$cu := .CurrentUser}}
-<div id="activity-area" class="mt-5 pt-5 has-divider-top">
+<div id="activity-area"
+     hx-get="/requests/{{.Request.ID}}/activity"
+     hx-trigger="reload-activity from:body"
+     hx-swap="outerHTML"
+     class="mt-5 pt-5 has-divider-top">
   <h3 class="is-uppercase has-text-weight-semibold has-text-grey-light mb-4" style="font-size:.7rem;letter-spacing:.07em">Activity</h3>
 
   <div class="mb-3">
@@ -66,8 +70,9 @@
     <div class="is-flex is-align-items-center is-justify-content-space-between gap-3">
       {{if $cu.IsCoordinator}}
       <label class="is-flex is-align-items-center gap-2 is-size-7 has-text-grey" style="cursor:pointer">
-        <input type="checkbox" name="internal" value="1" class="batch-cb">
-        Internal note (coordinators only)
+        <input type="checkbox" name="internal" value="1" class="batch-cb"
+               onchange="this.closest('form').querySelector('textarea').classList.toggle('is-internal', this.checked)">
+        Internal (coordinators only)
       </label>
       {{else}}
       <div></div>
